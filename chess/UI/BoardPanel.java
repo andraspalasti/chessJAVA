@@ -56,11 +56,18 @@ public class BoardPanel extends JPanel {
     }
 
     private void makeMove(Move move) {
-        setSelectedSquare(null);
-        board.makeMove(move);
-        this.squares[move.to.rank][move.to.file].setPiece(this.squares[move.from.rank][move.from.file].getPiece());
-        this.squares[move.from.rank][move.from.file].setPiece(null);
+        this.board.makeMove(move);
         this.legalMoves = board.generateMoves();
+        updateSquares();
+        setSelectedSquare(null);
+    }
+
+    private void updateSquares() {
+        for (int row = 0; row < squares.length; row++) {
+            for (int col = 0; col < squares[row].length; col++) {
+                this.squares[row][col].setPiece(board.getPiece(row, col));
+            }
+        }
     }
 
     private void setSelectedSquare(Square square) {
