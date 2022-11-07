@@ -9,6 +9,7 @@ import chess.core.PieceType;
 import chess.core.Square;
 
 import java.awt.*;
+import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
@@ -66,6 +67,7 @@ public class SquareComponent extends JButton {
                 RenderingHints.VALUE_ALPHA_INTERPOLATION_QUALITY);
         g2d.setRenderingHint(RenderingHints.KEY_INTERPOLATION,
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
+        g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
         g2d.setColor(getSquareBackground());
         g2d.fillRect(0, 0, size.width, size.height);
@@ -77,7 +79,15 @@ public class SquareComponent extends JButton {
 
         if (isTarget) {
             g2d.setColor(new Color(63, 63, 63, 255 / 3));
-            g2d.fillOval(size.width / 3, size.height / 3, size.width / 3, size.height / 3);
+            if (this.piece == null) {
+                g2d.fillOval(size.width / 3, size.height / 3, size.width / 3, size.height / 3);
+            } else {
+                Ellipse2D outer = new Ellipse2D.Double(1, 1, size.width - 2, size.height - 2);
+                Ellipse2D inner = new Ellipse2D.Double(6, 6, size.width - 12, size.height - 12);
+                Area circle = new Area(outer);
+                circle.subtract(new Area(inner));
+                g2d.fill(circle);
+            }
         }
     }
 
