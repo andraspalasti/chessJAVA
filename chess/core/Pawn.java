@@ -22,25 +22,42 @@ public class Pawn extends Piece {
             return moves;
         }
 
-        // TODO: Implement en passant move and check
-        // TODO: Implement pawn captures
-
-        // Check pawn push
         int forwardDir = this.color == PieceColor.WHITE ? -1 : 1;
-        Square dest = new Square(origin.rank + forwardDir, origin.file);
-        if (this.board.isLegalSquare(dest) && this.board.getPiece(dest) == null) {
-            moves.add(new Move(origin, dest));
-        } else {
-            return moves;
+
+        // Check for pawn push
+        Square push = new Square(origin.rank + forwardDir, origin.file);
+        if (board.isLegalSquare(push) && board.getPiece(push) == null) {
+            moves.add(new Move(origin, push));
+
+            // Check for double pawn push
+            int initalRank = this.color == PieceColor.WHITE ? Board.HEIGHT - 2 : 1;
+            Square doublePush = new Square(origin.rank + 2 * forwardDir, origin.file);
+            if (initalRank == origin.rank && board.getPiece(doublePush) == null) {
+                moves.add(new Move(origin, doublePush));
+            }
         }
 
-        // Check double pawn push
-        int initalRank = this.color == PieceColor.WHITE ? Board.HEIGHT - 2 : 1;
-        dest = new Square(origin.rank + 2 * forwardDir, origin.file);
-        if (origin.rank == initalRank && this.board.getPiece(dest) == null) {
-            moves.add(new Move(origin, dest));
+        // Check for pawn captures
+        Square leftCapture = new Square(origin.rank + forwardDir, push.file + 1),
+                rightCapture = new Square(origin.rank + forwardDir, push.file - 1);
+        if (containsOpponentPiece(leftCapture)) {
+            moves.add(new Move(origin, leftCapture));
         }
+        if (containsOpponentPiece(rightCapture)) {
+            moves.add(new Move(origin, rightCapture));
+        }
+        // TODO: Implement en passant move and check
         return moves;
+    }
+
+    public boolean containsOpponentPiece(Square square) {
+        if (board.isLegalSquare(square)) {
+            Piece p = board.getPiece(square);
+            if (p != null && p.getColor() != color) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @Override
