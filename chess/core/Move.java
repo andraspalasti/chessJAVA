@@ -17,6 +17,14 @@ public class Move {
         this.capturedPiece = capturedPiece;
     }
 
+    public boolean isKingSideCastle() {
+        return from.file == 4 && to.file == 6;
+    }
+
+    public boolean isQueenSideCastle() {
+        return from.file == 4 && to.file == 2;
+    }
+
     @Override
     public boolean equals(Object obj) {
         Move other = (Move) obj;

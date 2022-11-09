@@ -118,10 +118,24 @@ public class Board {
     private void mustMakeMove(Move move) {
         Square src = move.from, dest = move.to;
         Piece piece = getPiece(src);
+
         squares[src.getRow()][src.getCol()] = null;
         move.setCapturedPiece(getPiece(dest));
         squares[dest.getRow()][dest.getCol()] = piece;
-        // TODO: also have to move rooks when castling
+
+        // handle castling
+        if (piece.getType() == PieceType.King) {
+            if (move.isKingSideCastle()) {
+                squares[dest.getRow()][dest.getCol() - 1] = squares[src.getRow()][Board.WIDTH - 1];
+                squares[src.getRow()][Board.WIDTH - 1] = null;
+            }
+            if (move.isQueenSideCastle()) {
+                squares[dest.getRow()][dest.getCol() + 1] = squares[src.getRow()][0];
+                squares[src.getRow()][0] = null;
+            }
+        }
+
+        // TODO: handle castling rights too
         // TODO: handle en pasant
         activeColor = activeColor.getInverse();
         moveHistory.add(move);
@@ -134,12 +148,26 @@ public class Board {
 
         Move lastMove = moveHistory.remove(moveHistory.size() - 1);
         Square src = lastMove.from, dest = lastMove.to;
-        Piece piece = getPiece(dest);
+        Piece movedPiece = getPiece(dest);
+
         squares[dest.getRow()][dest.getCol()] = lastMove.getCapturedPiece();
-        squares[src.getRow()][src.getCol()] = piece;
+        squares[src.getRow()][src.getCol()] = movedPiece;
+
+        // handle castling undo
+        if (movedPiece.getType() == PieceType.King) {
+            if (lastMove.isKingSideCastle()) {
+                squares[src.getRow()][Board.WIDTH - 1] = squares[dest.getRow()][dest.getCol() - 1];
+                squares[dest.getRow()][dest.getCol() - 1] = null;
+            }
+            if (lastMove.isQueenSideCastle()) {
+                squares[src.getRow()][0] = squares[dest.getRow()][dest.getCol() + 1];
+                squares[dest.getRow()][dest.getCol() + 1] = null;
+            }
+        }
+
         activeColor = activeColor.getInverse();
-        // TODO: also have to move rooks when castling
         // TODO: handle en pasant
+        // TODO: undo castling rights
     }
 
     protected Square findPiece(Piece p) {

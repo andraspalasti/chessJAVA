@@ -57,17 +57,13 @@ public class King extends Piece {
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
         return hasRight
                 && board.squares[rank][5] == null
-                && board.squares[rank][6] == null
-                && board.squares[rank][7].getType() == PieceType.Rook
-                && board.squares[rank][7].getColor() == color;
+                && board.squares[rank][6] == null;
     }
 
     private boolean canQueenSideCastle() {
         boolean hasRight = color == PieceColor.WHITE ? board.whiteCastleQueenside : board.blackCastleQueenside;
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
         return hasRight
-                && board.squares[rank][0].getType() == PieceType.Rook
-                && board.squares[rank][0].getColor() == color
                 && board.squares[rank][1] == null
                 && board.squares[rank][2] == null
                 && board.squares[rank][3] == null;
