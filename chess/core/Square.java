@@ -34,6 +34,14 @@ public class Square {
         this.file = file;
     }
 
+    public int getRow() {
+        return rank;
+    }
+
+    public int getCol() {
+        return file;
+    }
+
     @Override
     public boolean equals(Object obj) {
         Square other = (Square) obj;

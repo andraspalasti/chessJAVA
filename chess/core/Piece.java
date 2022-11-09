@@ -24,6 +24,15 @@ public abstract class Piece {
         return moves.contains(move);
     }
 
+    public boolean isAttacking(Square square) {
+        for (Move possibleMove : this.generateMoves()) {
+            if (possibleMove.to.equals(square)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public PieceColor getColor() {
         return color;
     }

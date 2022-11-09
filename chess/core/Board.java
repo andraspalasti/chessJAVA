@@ -19,7 +19,7 @@ public class Board {
 
     protected List<Move> moveHistory;
 
-    public void initalize() {
+    private void initalize() {
         this.squares = new Piece[HEIGHT][WIDTH];
         this.activeColor = PieceColor.WHITE;
         this.whiteCastleKingside = false;
@@ -43,14 +43,14 @@ public class Board {
         return getPiece(square.rank, square.file);
     }
 
-    public Piece getPiece(int rank, int file) {
-        if (rank < 0 || HEIGHT <= rank)
-            throw new IllegalArgumentException("Rank out of bounds");
+    public Piece getPiece(int row, int col) {
+        if (row < 0 || HEIGHT <= row)
+            throw new IllegalArgumentException("Row out of bounds");
 
-        if (file < 0 || WIDTH <= file)
-            throw new IllegalArgumentException("File out of bounds");
+        if (col < 0 || WIDTH <= col)
+            throw new IllegalArgumentException("Column out of bounds");
 
-        return this.squares[rank][file];
+        return squares[row][col];
     }
 
     public List<Move> generateMoves() {
@@ -58,10 +58,13 @@ public class Board {
         for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
             Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
             if (piece != null && piece.getColor() == activeColor) {
-                moves.addAll(piece.generateMoves());
+                for (Move move : piece.generateMoves()) {
+                    if (isLegal(move)) {
+                        moves.add(move);
+                    }
+                }
             }
         }
-        // TODO: filter the pseudo legal moves to make them completely legal
         return moves;
     }
 
@@ -73,7 +76,7 @@ public class Board {
             throw new IllegalArgumentException("The target square of the move is outside of the board");
         }
 
-        Piece piece = this.getPiece(move.from);
+        Piece piece = getPiece(move.from);
         if (piece == null) {
             throw new IllegalArgumentException("There is no piece on the source square of the move");
         }
@@ -81,9 +84,62 @@ public class Board {
             throw new IllegalArgumentException("Illegal move");
         }
 
-        squares[move.to.rank][move.to.file] = piece;
-        squares[move.from.rank][move.from.file] = null;
+        if (!isLegal(move)) {
+            throw new IllegalArgumentException("Illegal move, this move is only pseudo legal");
+        }
+        mustMakeMove(move);
+    }
+
+    private boolean isLegal(Move move) {
+        PieceColor curColor = activeColor;
+        mustMakeMove(move);
+
+        // Find position of the king
+        Square kingPos = null;
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() == curColor && piece.getType() == PieceType.King) {
+                kingPos = new Square(i / Board.WIDTH, i % Board.WIDTH);
+            }
+        }
+
+        // Check that anything is attacking it
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() == activeColor && piece.isAttacking(kingPos)) {
+                undoMove();
+                return false;
+            }
+        }
+        undoMove();
+        return true;
+    }
+
+    private void mustMakeMove(Move move) {
+        Square src = move.from, dest = move.to;
+        Piece piece = getPiece(src);
+        squares[src.getRow()][src.getCol()] = null;
+        move.setCapturedPiece(getPiece(dest));
+        squares[dest.getRow()][dest.getCol()] = piece;
+        // TODO: also have to move rooks when castling
+        // TODO: handle en pasant
         activeColor = activeColor.getInverse();
+        moveHistory.add(move);
+    }
+
+    public void undoMove() {
+        if (moveHistory.size() == 0) {
+            return;
+        }
+
+        Move lastMove = moveHistory.remove(moveHistory.size() - 1);
+        Square src = lastMove.from, dest = lastMove.to;
+        Piece piece = getPiece(dest);
+        squares[dest.getRow()][dest.getCol()] = lastMove.getCapturedPiece();
+        squares[src.getRow()][src.getCol()] = piece;
+        activeColor = activeColor.getInverse();
+        // TODO: also have to move rooks when castling
+        // TODO: handle en pasant
     }
 
     protected Square findPiece(Piece p) {
@@ -97,9 +153,9 @@ public class Board {
         return null;
     }
 
-    public boolean isLegalSquare(int file, int rank) {
-        return (0 <= rank && rank < Board.HEIGHT)
-                && (0 <= file && file < Board.WIDTH);
+    public boolean isLegalSquare(int row, int col) {
+        return (0 <= col && col < Board.HEIGHT)
+                && (0 <= row && row < Board.WIDTH);
     }
 
     public boolean isLegalSquare(Square pos) {
