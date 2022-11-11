@@ -42,26 +42,26 @@ public class King extends Piece {
 
         // Handle castling
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
-        if (canKingSideCastle()) {
+        if (canCastleKingside()) {
             moves.add(new Move(origin, new Square(rank, 6)));
         }
-        if (canQueenSideCastle()) {
+        if (canCastleQueenside()) {
             moves.add(new Move(origin, new Square(rank, 2)));
         }
 
         return moves;
     }
 
-    private boolean canKingSideCastle() {
-        boolean hasRight = color == PieceColor.WHITE ? board.whiteCastleKingside : board.blackCastleKingside;
+    private boolean canCastleKingside() {
+        boolean hasRight = board.canCastleKingside(color);
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
         return hasRight
                 && board.squares[rank][5] == null
                 && board.squares[rank][6] == null;
     }
 
-    private boolean canQueenSideCastle() {
-        boolean hasRight = color == PieceColor.WHITE ? board.whiteCastleQueenside : board.blackCastleQueenside;
+    private boolean canCastleQueenside() {
+        boolean hasRight = board.canCastleQueenside(color);
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
         return hasRight
                 && board.squares[rank][1] == null

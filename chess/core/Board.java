@@ -8,13 +8,18 @@ public class Board {
 
     private static final String STARTING_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
-    // Board state
+    private static final byte whiteKingsideMask = (byte) 0b0001,
+            whiteQueensideMask = (byte) 0b0010,
+            blackKingsideMask = (byte) 0b0100,
+            blackQueensideMask = (byte) 0b1000;
+
+    /**
+     * A byte representing the castling rights of the board.
+     */
+    private byte castlingRights;
+
     protected Piece[][] squares;
     protected PieceColor activeColor;
-    protected boolean whiteCastleKingside = false;
-    protected boolean whiteCastleQueenside = false;
-    protected boolean blackCastleKingside = false;
-    protected boolean blackCastleQueenside = false;
     protected Square enPassantSquare;
 
     protected List<Move> moveHistory;
@@ -22,10 +27,7 @@ public class Board {
     private void initalize() {
         this.squares = new Piece[HEIGHT][WIDTH];
         this.activeColor = PieceColor.WHITE;
-        this.whiteCastleKingside = false;
-        this.whiteCastleQueenside = false;
-        this.blackCastleKingside = false;
-        this.blackCastleQueenside = false;
+        this.castlingRights = 0b1111;
         this.enPassantSquare = null;
 
         this.moveHistory = new ArrayList<>();
@@ -58,6 +60,7 @@ public class Board {
         for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
             Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
             if (piece != null && piece.getColor() == activeColor) {
+                // Filter out only pseudo legal moves
                 for (Move move : piece.generateMoves()) {
                     if (isLegal(move)) {
                         moves.add(move);
@@ -118,10 +121,12 @@ public class Board {
     private void mustMakeMove(Move move) {
         Square src = move.from, dest = move.to;
         Piece piece = getPiece(src);
+        Piece capturedPiece = getPiece(dest);
 
         squares[src.getRow()][src.getCol()] = null;
-        move.setCapturedPiece(getPiece(dest));
         squares[dest.getRow()][dest.getCol()] = piece;
+        move.setCapturedPiece(capturedPiece);
+        move.setPrevCastlingRights(castlingRights);
 
         // handle castling
         if (piece.getType() == PieceType.King) {
@@ -133,9 +138,37 @@ public class Board {
                 squares[dest.getRow()][dest.getCol() + 1] = squares[src.getRow()][0];
                 squares[src.getRow()][0] = null;
             }
+
+            // clear castling rights
+            if (piece.getColor() == PieceColor.WHITE)
+                castlingRights &= (~whiteKingsideMask & ~whiteQueensideMask);
+            else
+                castlingRights &= (~blackKingsideMask & ~blackQueensideMask);
         }
 
-        // TODO: handle castling rights too
+        // adjust castling rights
+        if (piece.getType() == PieceType.Rook && src.isCorner()) {
+            if (src.isTopLeft())
+                castlingRights &= ~blackQueensideMask;
+            else if (src.isTopRight())
+                castlingRights &= ~blackKingsideMask;
+            else if (src.isBottomLeft())
+                castlingRights &= ~whiteQueensideMask;
+            else if (src.isBottomRight())
+                castlingRights &= ~whiteKingsideMask;
+        }
+
+        if (capturedPiece.getType() == PieceType.Rook && dest.isCorner()) {
+            if (dest.isTopLeft())
+                castlingRights &= ~blackQueensideMask;
+            else if (dest.isTopRight())
+                castlingRights &= ~blackKingsideMask;
+            else if (dest.isBottomLeft())
+                castlingRights &= ~whiteQueensideMask;
+            else if (dest.isBottomRight())
+                castlingRights &= ~whiteKingsideMask;
+        }
+
         // TODO: handle en pasant
         activeColor = activeColor.getInverse();
         moveHistory.add(move);
@@ -165,9 +198,9 @@ public class Board {
             }
         }
 
+        castlingRights = lastMove.getPrevCastlingRights();
         activeColor = activeColor.getInverse();
         // TODO: handle en pasant
-        // TODO: undo castling rights
     }
 
     protected Square findPiece(Piece p) {
@@ -179,6 +212,14 @@ public class Board {
             }
         }
         return null;
+    }
+
+    public boolean canCastleKingside(PieceColor color) {
+        return (castlingRights & (color == PieceColor.WHITE ? whiteKingsideMask : blackKingsideMask)) != 0;
+    }
+
+    public boolean canCastleQueenside(PieceColor color) {
+        return (castlingRights & (color == PieceColor.WHITE ? whiteQueensideMask : blackQueensideMask)) != 0;
     }
 
     public boolean isLegalSquare(int row, int col) {

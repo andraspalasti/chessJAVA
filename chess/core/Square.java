@@ -1,6 +1,13 @@
 package chess.core;
 
 public class Square {
+    private static final Square[] cornerSquares = new Square[] {
+            new Square(0, 0), // Top left corner
+            new Square(0, Board.WIDTH - 1), // Top right corner
+            new Square(Board.HEIGHT - 1, 0), // Bottom left corner
+            new Square(Board.HEIGHT - 1, Board.WIDTH - 1) // Bottom right corner
+    };
+
     /**
      * The row on a chess board
      */
@@ -40,6 +47,31 @@ public class Square {
 
     public int getCol() {
         return file;
+    }
+
+    public boolean isCorner() {
+        for (Square corner : cornerSquares) {
+            if (this.equals(corner)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean isTopLeft() {
+        return this.equals(cornerSquares[0]);
+    }
+
+    public boolean isTopRight() {
+        return this.equals(cornerSquares[1]);
+    }
+
+    public boolean isBottomLeft() {
+        return this.equals(cornerSquares[2]);
+    }
+
+    public boolean isBottomRight() {
+        return this.equals(cornerSquares[3]);
     }
 
     @Override

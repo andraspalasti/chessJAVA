@@ -60,11 +60,11 @@ public class FenParser {
         if (!sections.hasNext())
             throw new InvalidFENException("There is no castling rights section in the FEN string");
 
-        String rights = sections.next();
-        board.whiteCastleQueenside = rights.contains("Q");
-        board.whiteCastleKingside = rights.contains("K");
-        board.blackCastleQueenside = rights.contains("q");
-        board.blackCastleKingside = rights.contains("k");
+        // String rights = sections.next();
+        // board.whiteCastleQueenside = rights.contains("Q");
+        // board.whiteCastleKingside = rights.contains("K");
+        // board.blackCastleQueenside = rights.contains("q");
+        // board.blackCastleKingside = rights.contains("k");
 
         // Parse en passant target square
         if (!sections.hasNext())

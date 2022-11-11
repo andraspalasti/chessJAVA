@@ -3,6 +3,7 @@ package chess.core;
 public class Move {
     public final Square from, to;
     private Piece capturedPiece = null;
+    private byte prevCastlingRights;
 
     public Move(Square from, Square to) {
         this.from = from;
@@ -15,6 +16,14 @@ public class Move {
 
     protected void setCapturedPiece(Piece capturedPiece) {
         this.capturedPiece = capturedPiece;
+    }
+
+    public byte getPrevCastlingRights() {
+        return prevCastlingRights;
+    }
+
+    public void setPrevCastlingRights(byte prevCastlingRights) {
+        this.prevCastlingRights = prevCastlingRights;
     }
 
     public boolean isKingSideCastle() {
