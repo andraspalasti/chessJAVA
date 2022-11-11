@@ -18,19 +18,19 @@ public class Move {
         this.capturedPiece = capturedPiece;
     }
 
-    public byte getPrevCastlingRights() {
+    protected byte getPrevCastlingRights() {
         return prevCastlingRights;
     }
 
-    public void setPrevCastlingRights(byte prevCastlingRights) {
+    protected void setPrevCastlingRights(byte prevCastlingRights) {
         this.prevCastlingRights = prevCastlingRights;
     }
 
-    public boolean isKingSideCastle() {
+    protected boolean isKingSideCastle() {
         return from.file == 4 && to.file == 6;
     }
 
-    public boolean isQueenSideCastle() {
+    protected boolean isQueenSideCastle() {
         return from.file == 4 && to.file == 2;
     }
 

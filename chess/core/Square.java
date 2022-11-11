@@ -74,6 +74,10 @@ public class Square {
         return this.equals(cornerSquares[3]);
     }
 
+    public boolean isWhite() {
+        return (rank + file) % 2 == 0;
+    }
+
     @Override
     public boolean equals(Object obj) {
         Square other = (Square) obj;

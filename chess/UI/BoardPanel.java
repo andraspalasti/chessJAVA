@@ -10,6 +10,7 @@ import chess.core.Move;
 import chess.core.Piece;
 import chess.core.Square;
 
+// TODO: Need to clean up logic its a mess now
 public class BoardPanel extends JPanel {
     private Board board;
     private SquareComponent[][] squares;
@@ -66,7 +67,14 @@ public class BoardPanel extends JPanel {
         for (int row = 0; row < squares.length; row++) {
             for (int col = 0; col < squares[row].length; col++) {
                 this.squares[row][col].setPiece(board.getPiece(row, col));
+                this.squares[row][col].setSource(false);
+                this.squares[row][col].setDestination(false);
             }
+        }
+        Move lastMove = board.getLastMove();
+        if (lastMove != null) {
+            this.squares[lastMove.from.getRow()][lastMove.from.getCol()].setSource(true);
+            this.squares[lastMove.to.getRow()][lastMove.to.getCol()].setDestination(true);
         }
     }
 

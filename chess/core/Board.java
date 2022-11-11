@@ -158,7 +158,7 @@ public class Board {
                 castlingRights &= ~whiteKingsideMask;
         }
 
-        if (capturedPiece.getType() == PieceType.Rook && dest.isCorner()) {
+        if (capturedPiece != null && capturedPiece.getType() == PieceType.Rook && dest.isCorner()) {
             if (dest.isTopLeft())
                 castlingRights &= ~blackQueensideMask;
             else if (dest.isTopRight())
@@ -210,6 +210,13 @@ public class Board {
                     return new Square(rank, file);
                 }
             }
+        }
+        return null;
+    }
+
+    public Move getLastMove() {
+        if (0 < moveHistory.size()) {
+            return moveHistory.get(moveHistory.size() - 1);
         }
         return null;
     }

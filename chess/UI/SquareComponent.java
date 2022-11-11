@@ -13,11 +13,10 @@ import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 
+// TODO: Need to clean up logic its a mess now
 public class SquareComponent extends JButton {
-    private static final Color black = new Color(181, 136, 99);
-    private static final Color white = new Color(240, 217, 181);
-    private static final Color selectedOnWhite = new Color(247, 236, 118);
-    private static final Color selectedOnBlack = new Color(218, 195, 73);
+    private Color backgroundColor;
+    private Color highlightColor;
 
     // Read in images for chess pieces
     private static final PieceType[] pieces = new PieceType[] { PieceType.King, PieceType.Queen, PieceType.Bishop,
@@ -26,8 +25,8 @@ public class SquareComponent extends JButton {
     static {
         try {
             File img = new File("assets" + File.separator + "pieces.png");
-            int width = 2000 / pieces.length, height = 668 / 2;
             BufferedImage bi = ImageIO.read(img);
+            int width = bi.getWidth() / pieces.length, height = bi.getHeight() / 2;
             for (int row = 0; row < 2; row++) {
                 for (int col = 0; col < pieces.length; col++) {
                     chessPieceImages[row][col] = bi.getSubimage(
@@ -36,17 +35,25 @@ public class SquareComponent extends JButton {
             }
         } catch (Exception e) {
             e.printStackTrace();
-            System.exit(1);
         }
     }
 
     private final Square pos;
     private Piece piece;
     private boolean isTarget = false;
+    private boolean isSource = false, isDestination = false;
 
     public SquareComponent(Square pos) {
         this.pos = pos;
         this.setPreferredSize(new Dimension(60, 60));
+
+        if (pos.isWhite()) {
+            backgroundColor = new Color(240, 217, 181);
+            highlightColor = new Color(247, 236, 118);
+        } else {
+            backgroundColor = new Color(181, 136, 99);
+            highlightColor = new Color(218, 195, 73);
+        }
     }
 
     public Piece getPiece() {
@@ -60,7 +67,12 @@ public class SquareComponent extends JButton {
     @Override
     public void paint(Graphics g) {
         Dimension size = getSize();
-        this.setCursor(getSquareCursor());
+
+        if (this.piece != null || isTarget) {
+            this.setCursor(new Cursor(Cursor.HAND_CURSOR));
+        } else {
+            this.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+        }
 
         Graphics2D g2d = (Graphics2D) g;
         g2d.setRenderingHint(RenderingHints.KEY_ALPHA_INTERPOLATION,
@@ -69,7 +81,11 @@ public class SquareComponent extends JButton {
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        g2d.setColor(getSquareBackground());
+        if (this.isSelected() || isSource || isDestination) {
+            g2d.setColor(highlightColor);
+        } else {
+            g2d.setColor(backgroundColor);
+        }
         g2d.fillRect(0, 0, size.width, size.height);
 
         Image img = getPieceImage();
@@ -99,23 +115,16 @@ public class SquareComponent extends JButton {
         this.isTarget = isTarget;
     }
 
+    public void setSource(boolean isSource) {
+        this.isSource = isSource;
+    }
+
+    public void setDestination(boolean isDestination) {
+        this.isDestination = isDestination;
+    }
+
     public Square getPos() {
         return this.pos;
-    }
-
-    private Cursor getSquareCursor() {
-        if (this.piece != null || isTarget) {
-            return new Cursor(Cursor.HAND_CURSOR);
-        }
-        return new Cursor(Cursor.DEFAULT_CURSOR);
-    }
-
-    private Color getSquareBackground() {
-        boolean isWhite = (pos.rank + pos.file) % 2 == 0;
-        if (this.isSelected()) {
-            return isWhite ? selectedOnWhite : selectedOnBlack;
-        }
-        return isWhite ? white : black;
     }
 
     private Image getPieceImage() {
