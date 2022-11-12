@@ -11,7 +11,6 @@ import chess.core.Square;
 import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
-import java.io.File;
 
 // TODO: Need to clean up logic its a mess now
 public class SquareComponent extends JButton {
@@ -24,8 +23,8 @@ public class SquareComponent extends JButton {
     private static final Image[][] chessPieceImages = new Image[2][pieces.length];
     static {
         try {
-            File img = new File("assets" + File.separator + "pieces.png");
-            BufferedImage bi = ImageIO.read(img);
+            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+            BufferedImage bi = ImageIO.read(classLoader.getResource("assets/pieces.png"));
             int width = bi.getWidth() / pieces.length, height = bi.getHeight() / 2;
             for (int row = 0; row < 2; row++) {
                 for (int col = 0; col < pieces.length; col++) {
