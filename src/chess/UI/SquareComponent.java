@@ -12,11 +12,7 @@ import java.awt.*;
 import java.awt.geom.*;
 import java.awt.image.BufferedImage;
 
-// TODO: Need to clean up logic its a mess now
 public class SquareComponent extends JButton {
-    private Color backgroundColor;
-    private Color highlightColor;
-
     // Read in images for chess pieces
     private static final PieceType[] pieces = new PieceType[] { PieceType.King, PieceType.Queen, PieceType.Bishop,
             PieceType.Knight, PieceType.Rook, PieceType.Pawn };
@@ -37,7 +33,10 @@ public class SquareComponent extends JButton {
         }
     }
 
-    private final Square pos;
+    private Color backgroundColor;
+    private Color highlightColor;
+
+    private Square pos;
     private Piece piece;
     private boolean isTarget = false;
     private boolean isSource = false, isDestination = false;
@@ -112,14 +111,6 @@ public class SquareComponent extends JButton {
 
     public void setTarget(boolean isTarget) {
         this.isTarget = isTarget;
-    }
-
-    public void setSource(boolean isSource) {
-        this.isSource = isSource;
-    }
-
-    public void setDestination(boolean isDestination) {
-        this.isDestination = isDestination;
     }
 
     public Square getPos() {
