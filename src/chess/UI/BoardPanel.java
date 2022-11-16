@@ -13,22 +13,20 @@ import chess.core.Square;
 public class BoardPanel extends JPanel {
     private Board board;
     private SquareComponent[][] squares;
-    private Square selected;
     private List<Move> legalMoves;
+    private Square selected;
 
     private ActionListener onSquareClick = (event) -> {
         SquareComponent square = (SquareComponent) event.getSource();
 
         Piece piece = square.getPiece();
         if (square.isTarget()) {
-            this.makeMove(new Move(selected, square.getPos()));
+            makeMove(new Move(selected, square.getPos()));
         } else if (piece != null) {
-            this.setSelectedSquare(square.getPos());
+            setSelectedSquare(square.getPos());
         } else {
-            this.setSelectedSquare(null);
+            setSelectedSquare(null);
         }
-
-        this.repaint();
     };
 
     public BoardPanel() {
@@ -39,10 +37,10 @@ public class BoardPanel extends JPanel {
 
         for (int row = 0; row < Board.HEIGHT; row++) {
             for (int col = 0; col < Board.WIDTH; col++) {
-                this.squares[row][col] = new SquareComponent(new Square(row, col));
-                this.squares[row][col].setPiece(board.getPiece(row, col));
-                this.squares[row][col].addActionListener(onSquareClick);
-                this.add(this.squares[row][col]);
+                squares[row][col] = new SquareComponent(new Square(row, col));
+                squares[row][col].setPiece(board.getPiece(row, col));
+                squares[row][col].addActionListener(onSquareClick);
+                this.add(squares[row][col]);
             }
         }
     }
@@ -51,30 +49,33 @@ public class BoardPanel extends JPanel {
     public Insets getInsets() {
         Dimension size = getSize();
         int min = size.width < size.height ? size.width : size.height;
-        return new Insets((size.height - min) / 2, (size.width - min) / 2, (size.height - min) / 2,
+        return new Insets((size.height - min) / 2, (size.width - min) / 2,
+                (size.height - min) / 2,
                 (size.width - min) / 2);
     }
 
-    private void makeMove(Move move) {
-        this.board.makeMove(move);
-        this.legalMoves = board.generateMoves();
-        fireSquaresChanged();
+    public void makeMove(Move move) {
+        board.makeMove(move);
+        legalMoves = board.generateMoves();
+        fireBoardChanged();
     }
 
-    private void fireSquaresChanged() {
+    private void fireBoardChanged() {
         setSelectedSquare(null);
         for (int row = 0; row < squares.length; row++) {
             for (int col = 0; col < squares[row].length; col++) {
-                this.squares[row][col].setPiece(board.getPiece(row, col));
-                this.squares[row][col].setSelected(false);
+                squares[row][col].setPiece(board.getPiece(row, col));
+                squares[row][col].setSelected(false);
             }
         }
 
         Move lastMove = board.getLastMove();
         if (lastMove != null) {
-            this.squares[lastMove.from.getRow()][lastMove.from.getCol()].setSelected(true);
-            this.squares[lastMove.to.getRow()][lastMove.to.getCol()].setSelected(true);
+            squares[lastMove.from.getRow()][lastMove.from.getCol()].setSelected(true);
+            squares[lastMove.to.getRow()][lastMove.to.getCol()].setSelected(true);
         }
+
+        this.repaint();
     }
 
     private void setSelectedSquare(Square square) {
@@ -86,20 +87,30 @@ public class BoardPanel extends JPanel {
         }
 
         // clear previous selection if there was one
-        if (this.selected != null) {
-            this.squares[selected.rank][selected.file].setSelected(false);
+        if (selected != null) {
+            squares[selected.rank][selected.file].setSelected(false);
         }
 
-        this.selected = square;
+        selected = square;
 
         // Set the selected and the target squares
         if (selected != null) {
-            this.squares[selected.rank][selected.file].setSelected(true);
+            squares[selected.rank][selected.file].setSelected(true);
             legalMoves.forEach((move) -> {
                 if (move.from.equals(selected)) {
                     squares[move.to.rank][move.to.file].setTarget(true);
                 }
             });
+        }
+
+        this.repaint();
+    }
+
+    public void undo() {
+        if (0 < board.getMoveCount()) {
+            board.undoMove();
+            legalMoves = board.generateMoves();
+            fireBoardChanged();
         }
     }
 }

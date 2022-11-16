@@ -55,6 +55,10 @@ public class Board {
         return squares[row][col];
     }
 
+    public int getMoveCount() {
+        return moveHistory.size();
+    }
+
     public List<Move> generateMoves() {
         List<Move> moves = new ArrayList<>();
         for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {

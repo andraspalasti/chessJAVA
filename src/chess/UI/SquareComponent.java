@@ -39,7 +39,6 @@ public class SquareComponent extends JButton {
     private Square pos;
     private Piece piece;
     private boolean isTarget = false;
-    private boolean isSource = false, isDestination = false;
 
     public SquareComponent(Square pos) {
         this.pos = pos;
@@ -79,7 +78,7 @@ public class SquareComponent extends JButton {
                 RenderingHints.VALUE_INTERPOLATION_BILINEAR);
         g2d.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
 
-        if (this.isSelected() || isSource || isDestination) {
+        if (this.isSelected()) {
             g2d.setColor(highlightColor);
         } else {
             g2d.setColor(backgroundColor);
