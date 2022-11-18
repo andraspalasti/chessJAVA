@@ -35,6 +35,6 @@ public class GamePanel extends JPanel {
 
         this.setLayout(new BorderLayout());
         this.add(boardPanel, BorderLayout.CENTER);
-        this.add(bottomPanel, BorderLayout.PAGE_END);
+        this.add(new MoveHistoryPanel(boardPanel), BorderLayout.AFTER_LINE_ENDS);
     }
 }

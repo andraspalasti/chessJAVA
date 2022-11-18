@@ -57,10 +57,28 @@ public class BoardPanel extends JPanel {
     public void makeMove(Move move) {
         board.makeMove(move);
         legalMoves = board.generateMoves();
-        fireBoardChanged();
+        this.firePropertyChange("board", null, null);
+        updateBoard();
     }
 
-    private void fireBoardChanged() {
+    public void undo() {
+        if (0 < board.getMoveCount()) {
+            board.undoMove();
+            legalMoves = board.generateMoves();
+            this.firePropertyChange("board", null, null);
+            updateBoard();
+        }
+    }
+
+    public Move[] getMoves() {
+        return board.getMoves();
+    }
+
+    public int getMoveCount() {
+        return board.getMoveCount();
+    }
+
+    private void updateBoard() {
         setSelectedSquare(null);
         for (int row = 0; row < squares.length; row++) {
             for (int col = 0; col < squares[row].length; col++) {
@@ -74,7 +92,6 @@ public class BoardPanel extends JPanel {
             squares[lastMove.from.getRow()][lastMove.from.getCol()].setSelected(true);
             squares[lastMove.to.getRow()][lastMove.to.getCol()].setSelected(true);
         }
-
         this.repaint();
     }
 
@@ -104,13 +121,5 @@ public class BoardPanel extends JPanel {
         }
 
         this.repaint();
-    }
-
-    public void undo() {
-        if (0 < board.getMoveCount()) {
-            board.undoMove();
-            legalMoves = board.generateMoves();
-            fireBoardChanged();
-        }
     }
 }

@@ -225,6 +225,14 @@ public class Board {
         return null;
     }
 
+    public Move[] getMoves() {
+        Move[] moves = new Move[moveHistory.size()];
+        for (int i = 0; i < moves.length; i++) {
+            moves[i] = moveHistory.get(i);
+        }
+        return moves;
+    }
+
     public boolean canCastleKingside(PieceColor color) {
         return (castlingRights & (color == PieceColor.WHITE ? whiteKingsideMask : blackKingsideMask)) != 0;
     }
