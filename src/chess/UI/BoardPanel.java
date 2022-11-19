@@ -31,6 +31,8 @@ public class BoardPanel extends JPanel {
 
     public BoardPanel() {
         this.board = new Board();
+        board.loadPGN("1. e4 e5 2. Nf3 Nc6 3. Bb5 a6");
+
         this.legalMoves = board.generateMoves();
         this.squares = new SquareComponent[Board.HEIGHT][Board.WIDTH];
         this.setLayout(new GridLayout(Board.HEIGHT, Board.WIDTH));

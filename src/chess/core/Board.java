@@ -6,7 +6,7 @@ import java.util.List;
 public class Board {
     public static final int WIDTH = 8, HEIGHT = 8;
 
-    private static final String STARTING_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+    private static final String STARTING_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
 
     private static final byte whiteKingsideMask = (byte) 0b0001,
             whiteQueensideMask = (byte) 0b0010,
@@ -31,14 +31,25 @@ public class Board {
         this.enPassantSquare = null;
 
         this.moveHistory = new ArrayList<>();
+
+        int row = 0, col = 0;
+        for (char c : STARTING_POS.toCharArray()) {
+            if (c == '/') {
+                row++;
+                col = 0;
+            } else if (Character.isDigit(c)) {
+                col += (int) (c - '1');
+            } else {
+                PieceType type = PieceType.fromCharacter(c);
+                PieceColor color = Character.isUpperCase(c) ? PieceColor.WHITE : PieceColor.BLACK;
+                squares[row][col] = createPiece(type, color);
+                col++;
+            }
+        }
     }
 
     public Board() {
         initalize();
-        try {
-            FenParser.loadFen(this, STARTING_POS);
-        } catch (Exception e) {
-        }
     }
 
     public Piece getPiece(Square square) {
@@ -67,6 +78,7 @@ public class Board {
                 // Filter out only pseudo legal moves
                 for (Move move : piece.generateMoves()) {
                     if (isLegal(move)) {
+                        move.setMovedPiece(piece);
                         moves.add(move);
                     }
                 }
@@ -129,16 +141,17 @@ public class Board {
 
         squares[src.getRow()][src.getCol()] = null;
         squares[dest.getRow()][dest.getCol()] = piece;
+        move.setMovedPiece(piece);
         move.setCapturedPiece(capturedPiece);
         move.setPrevCastlingRights(castlingRights);
 
         // handle castling
         if (piece.getType() == PieceType.King) {
-            if (move.isKingSideCastle()) {
+            if (move.isKingsideCastle()) {
                 squares[dest.getRow()][dest.getCol() - 1] = squares[src.getRow()][Board.WIDTH - 1];
                 squares[src.getRow()][Board.WIDTH - 1] = null;
             }
-            if (move.isQueenSideCastle()) {
+            if (move.isQueensideCastle()) {
                 squares[dest.getRow()][dest.getCol() + 1] = squares[src.getRow()][0];
                 squares[src.getRow()][0] = null;
             }
@@ -192,11 +205,11 @@ public class Board {
 
         // handle castling undo
         if (movedPiece.getType() == PieceType.King) {
-            if (lastMove.isKingSideCastle()) {
+            if (lastMove.isKingsideCastle()) {
                 squares[src.getRow()][Board.WIDTH - 1] = squares[dest.getRow()][dest.getCol() - 1];
                 squares[dest.getRow()][dest.getCol() - 1] = null;
             }
-            if (lastMove.isQueenSideCastle()) {
+            if (lastMove.isQueensideCastle()) {
                 squares[src.getRow()][0] = squares[dest.getRow()][dest.getCol() + 1];
                 squares[dest.getRow()][dest.getCol() + 1] = null;
             }
@@ -233,6 +246,14 @@ public class Board {
         return moves;
     }
 
+    public void loadPGN(String pgn) {
+        try {
+            PGNParser.loadPGN(this, pgn);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
     public boolean canCastleKingside(PieceColor color) {
         return (castlingRights & (color == PieceColor.WHITE ? whiteKingsideMask : blackKingsideMask)) != 0;
     }
@@ -248,5 +269,24 @@ public class Board {
 
     public boolean isLegalSquare(Square pos) {
         return isLegalSquare(pos.rank, pos.file);
+    }
+
+    protected Piece createPiece(PieceType type, PieceColor color) {
+        switch (type) {
+            case King:
+                return new King(this, color);
+            case Queen:
+                return new Queen(this, color);
+            case Rook:
+                return new Rook(this, color);
+            case Bishop:
+                return new Bishop(this, color);
+            case Knight:
+                return new Knight(this, color);
+            case Pawn:
+                return new Pawn(this, color);
+            default:
+                return null;
+        }
     }
 }

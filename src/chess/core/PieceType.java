@@ -17,4 +17,23 @@ public enum PieceType {
     public int getValue() {
         return this.value;
     }
+
+    public static PieceType fromCharacter(char c) {
+        switch (Character.toUpperCase(c)) {
+            case 'K':
+                return King;
+            case 'Q':
+                return Queen;
+            case 'R':
+                return Rook;
+            case 'B':
+                return Bishop;
+            case 'N':
+                return Knight;
+            case 'P':
+                return Pawn;
+            default:
+                return null;
+        }
+    }
 }

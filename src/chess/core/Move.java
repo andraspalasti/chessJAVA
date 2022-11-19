@@ -2,12 +2,20 @@ package chess.core;
 
 public class Move {
     public final Square from, to;
-    private Piece capturedPiece = null;
+    private Piece movedPiece, capturedPiece = null;
     private byte prevCastlingRights;
 
     public Move(Square from, Square to) {
         this.from = from;
         this.to = to;
+    }
+
+    public Piece getMovedPiece() {
+        return movedPiece;
+    }
+
+    protected void setMovedPiece(Piece movedPiece) {
+        this.movedPiece = movedPiece;
     }
 
     public Piece getCapturedPiece() {
@@ -26,11 +34,11 @@ public class Move {
         this.prevCastlingRights = prevCastlingRights;
     }
 
-    protected boolean isKingSideCastle() {
+    protected boolean isKingsideCastle() {
         return from.file == 4 && to.file == 6;
     }
 
-    protected boolean isQueenSideCastle() {
+    protected boolean isQueensideCastle() {
         return from.file == 4 && to.file == 2;
     }
 

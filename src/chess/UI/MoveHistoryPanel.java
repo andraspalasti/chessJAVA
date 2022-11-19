@@ -33,7 +33,9 @@ public class MoveHistoryPanel extends JPanel {
                 jlist.setSelectedIndex(lastMoveIndex);
             }
         } else {
-            moveHistory.addElement(moves[lastMoveIndex]);
+            while (moveHistory.size() <= lastMoveIndex) {
+                moveHistory.addElement(moves[moveHistory.size()]);
+            }
             jlist.setSelectedIndex(lastMoveIndex);
         }
     };
