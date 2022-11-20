@@ -49,7 +49,7 @@ public class PGNParser {
 
     private static Move parseMove(List<Move> legalMoves, String moveStr) throws InvalidPGNException {
         if (moveStr == null || moveStr.equals("")) {
-            throw new InvalidPGNException("Empty move");
+            return null;
         }
 
         if (moveStr.equals(draw)) {

@@ -30,8 +30,8 @@ public class MoveHistoryPanel extends JPanel {
                 // history is changed
                 moveHistory.removeRange(lastMoveIndex, moveHistory.size() - 1);
                 moveHistory.addElement(moves[lastMoveIndex]);
-                jlist.setSelectedIndex(lastMoveIndex);
             }
+            jlist.setSelectedIndex(lastMoveIndex);
         } else {
             while (moveHistory.size() <= lastMoveIndex) {
                 moveHistory.addElement(moves[moveHistory.size()]);
