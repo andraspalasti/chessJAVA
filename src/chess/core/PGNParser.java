@@ -1,12 +1,13 @@
 package chess.core;
 
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PGNParser {
-    private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\s(.*?)(?:$|\s(.*?)(?:\s|$))");
-    private static final Pattern movePattern = Pattern.compile("^([KQRBN]?)([a-h]?)x?([a-h][1-8])$");
+    private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\s(.*?)(?:\s(.*?)(?:$|\s)|$)");
+    private static final Pattern movePattern = Pattern.compile("([KQRBN]?)([a-h]?)x?([a-h][1-8])");
 
     // Castling
     private static final String kingsideCastle = "O-O";
@@ -14,60 +15,61 @@ public class PGNParser {
 
     private static final String draw = "1/2-1/2";
 
-    public static void loadPGN(Board board, String pgn) throws Exception {
-        Matcher fullMoveMatcher = fullMovePattern.matcher(pgn);
-
+    public static void loadPGN(Board board, String pgn) throws InvalidPGNException {
+        pgn = pgn.replaceAll("(\n\r|\n|\t)", " ");
         int moveCount = 1;
+        Matcher fullMoveMatcher = fullMovePattern.matcher(pgn);
         while (fullMoveMatcher.find()) {
             // Check if the move has the correct number
             int moveNumber = Integer.parseInt(fullMoveMatcher.group(1));
             if (moveCount != moveNumber) {
-                throw new Exception(String.format("Invalid pgn: Move number '%d' should be '%d' instead", moveNumber,
-                        moveCount));
+                throw new InvalidPGNException(
+                        String.format("Could not find move with move number: %d", moveCount));
             }
 
-            String whiteMove = fullMoveMatcher.group(2).trim();
-            if (whiteMove.equals(draw))
-                break;
-            Move move1 = parseMove(board.generateMoves(), whiteMove);
-            if (move1 == null)
-                throw new Exception(String.format("Invalid pgn: Illegal move on move number %d", moveCount));
-            board.makeMove(move1);
+            try {
+                String whiteMove = fullMoveMatcher.group(2).trim();
+                Move move1 = parseMove(board.generateMoves(), whiteMove);
+                if (move1 == null)
+                    break;
+                board.makeMove(move1);
 
-            String blackMove = fullMoveMatcher.group(3).trim();
-            if (blackMove.equals(draw))
-                break;
-
-            Move move2 = parseMove(board.generateMoves(), blackMove);
-            if (move2 == null)
-                break;
-            board.makeMove(move2);
+                String blackMove = fullMoveMatcher.group(3).trim();
+                Move move2 = parseMove(board.generateMoves(), blackMove);
+                if (move2 == null)
+                    break;
+                board.makeMove(move2);
+            } catch (InvalidPGNException e) {
+                throw new InvalidPGNException(String.format("%s with move number: %d", e.getMessage(), moveCount));
+            }
 
             moveCount++;
         }
     }
 
-    private static Move parseMove(List<Move> legalMoves, String move) {
-        if (move == null || move.equals("")) {
-            return null;
+    private static Move parseMove(List<Move> legalMoves, String moveStr) throws InvalidPGNException {
+        if (moveStr == null || moveStr.equals("")) {
+            throw new InvalidPGNException("Empty move");
         }
 
-        if (move.equals(draw)) {
+        if (moveStr.equals(draw)) {
             return null;
-        } else if (move.equals(kingsideCastle)) {
-            return legalMoves.stream().filter((m) -> m.isKingsideCastle()).findFirst().orElse(null);
-        } else if (move.equals(queensideCastle)) {
-            return legalMoves.stream().filter((m) -> m.isQueensideCastle()).findFirst().orElse(null);
+        } else if (moveStr.equals(kingsideCastle)) {
+            return legalMoves.stream().filter((m) -> m.isKingsideCastle()).findFirst()
+                    .orElseThrow(() -> new InvalidPGNException("Illegal move"));
+        } else if (moveStr.equals(queensideCastle)) {
+            return legalMoves.stream().filter((m) -> m.isQueensideCastle()).findFirst()
+                    .orElseThrow(() -> new InvalidPGNException("Illegal move"));
         }
 
-        Matcher moveMatcher = movePattern.matcher(move);
+        Matcher moveMatcher = movePattern.matcher(moveStr);
         if (!moveMatcher.find()) {
-            return null;
+            throw new InvalidPGNException("Invalid format for move");
         }
 
         PieceType type = moveMatcher.group(1).equals("") ? PieceType.Pawn
                 : PieceType.fromCharacter(moveMatcher.group(1).charAt(0));
-        int col = moveMatcher.group(2).equals("") ? -1 : Integer.parseInt(moveMatcher.group(2));
+        int col = moveMatcher.group(2).equals("") ? -1 : moveMatcher.group(2).charAt(0) - 'a';
         Square target = new Square(moveMatcher.group(3));
 
         return legalMoves.stream().filter((m) -> {
@@ -78,6 +80,40 @@ public class PGNParser {
                 return false;
             }
             return m.to.equals(target);
-        }).findFirst().orElse(null);
+        }).findFirst().orElseThrow(() -> new InvalidPGNException("Illegal move"));
+    }
+
+    public static void writePGN(PrintWriter pw, Board board) {
+        Move[] moves = board.getMoves();
+        for (int i = 0; i < moves.length; i++) {
+            Move move = moves[i];
+            if (i % 2 == 0) {
+                pw.write(String.format("%d. ", i / 2 + 1));
+            }
+            PieceType type = move.getMovedPiece().getType();
+            if (type == PieceType.King && move.isKingsideCastle()) {
+                pw.write(kingsideCastle);
+            } else if (type == PieceType.King && move.isQueensideCastle()) {
+                pw.write(queensideCastle);
+            } else {
+                pw.write(type.toString());
+                pw.append((char) (move.from.getCol() + 'a'));
+                if (move.getCapturedPiece() != null) {
+                    pw.append('x');
+                }
+                pw.write(move.to.toString());
+            }
+            if (i % 2 == 0) {
+                pw.append(' ');
+            } else {
+                pw.write(System.lineSeparator());
+            }
+        }
+    }
+
+    public static class InvalidPGNException extends Exception {
+        public InvalidPGNException(String reason) {
+            super(reason);
+        }
     }
 }

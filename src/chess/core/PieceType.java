@@ -36,4 +36,22 @@ public enum PieceType {
                 return null;
         }
     }
+
+    @Override
+    public String toString() {
+        switch (this) {
+            case King:
+                return "K";
+            case Queen:
+                return "Q";
+            case Rook:
+                return "R";
+            case Bishop:
+                return "B";
+            case Knight:
+                return "N";
+            default:
+                return "";
+        }
+    }
 }

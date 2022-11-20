@@ -3,12 +3,16 @@ package chess.UI;
 import javax.swing.JPanel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.PrintWriter;
 import java.util.List;
 
 import chess.core.Board;
 import chess.core.Move;
 import chess.core.Piece;
 import chess.core.Square;
+import chess.core.PGNParser.InvalidPGNException;
 
 public class BoardPanel extends JPanel {
     private Board board;
@@ -31,8 +35,6 @@ public class BoardPanel extends JPanel {
 
     public BoardPanel() {
         this.board = new Board();
-        board.loadPGN("1. e4 e5 2. Nf3 Nc6 3. Bb5 a6");
-
         this.legalMoves = board.generateMoves();
         this.squares = new SquareComponent[Board.HEIGHT][Board.WIDTH];
         this.setLayout(new GridLayout(Board.HEIGHT, Board.WIDTH));
@@ -72,12 +74,25 @@ public class BoardPanel extends JPanel {
         }
     }
 
+    public void loadPGN(String pgn) throws InvalidPGNException {
+        board.loadPGN(pgn);
+        updateBoard();
+        this.firePropertyChange("board", null, null);
+    }
+
     public Move[] getMoves() {
         return board.getMoves();
     }
 
     public int getMoveCount() {
         return board.getMoveCount();
+    }
+
+    public void saveToFile(File file) throws IOException {
+        PrintWriter pw = new PrintWriter(file);
+        board.writeMoves(pw);
+        pw.flush();
+        pw.close();
     }
 
     private void updateBoard() {

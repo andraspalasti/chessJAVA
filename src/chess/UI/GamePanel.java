@@ -3,9 +3,13 @@ package chess.UI;
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
 import java.awt.event.ActionListener;
+import java.io.File;
+import java.io.IOException;
 
 import javax.swing.JButton;
 import javax.swing.JPanel;
+
+import chess.core.PGNParser.InvalidPGNException;
 
 public class GamePanel extends JPanel {
     private BoardPanel boardPanel;
@@ -36,5 +40,13 @@ public class GamePanel extends JPanel {
         this.setLayout(new BorderLayout());
         this.add(boardPanel, BorderLayout.CENTER);
         this.add(new MoveHistoryPanel(boardPanel), BorderLayout.AFTER_LINE_ENDS);
+    }
+
+    public void saveGame(File file) throws IOException {
+        boardPanel.saveToFile(file);
+    }
+
+    public void loadGame(String pgn) throws InvalidPGNException {
+        boardPanel.loadPGN(pgn);
     }
 }

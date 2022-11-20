@@ -1,7 +1,10 @@
 package chess.core;
 
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+
+import chess.core.PGNParser.InvalidPGNException;
 
 public class Board {
     public static final int WIDTH = 8, HEIGHT = 8;
@@ -246,12 +249,13 @@ public class Board {
         return moves;
     }
 
-    public void loadPGN(String pgn) {
-        try {
-            PGNParser.loadPGN(this, pgn);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    public void loadPGN(String pgn) throws InvalidPGNException {
+        initalize();
+        PGNParser.loadPGN(this, pgn);
+    }
+
+    public void writeMoves(PrintWriter pw) {
+        PGNParser.writePGN(pw, this);
     }
 
     public boolean canCastleKingside(PieceColor color) {
