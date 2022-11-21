@@ -3,6 +3,7 @@ package chess.core;
 public class Move {
     public final Square from, to;
     private Piece movedPiece, capturedPiece = null;
+    private PieceType promotionTo = PieceType.Queen;
     private byte prevCastlingRights;
 
     public Move(Square from, Square to) {
@@ -32,6 +33,14 @@ public class Move {
 
     protected void setPrevCastlingRights(byte prevCastlingRights) {
         this.prevCastlingRights = prevCastlingRights;
+    }
+
+    public PieceType getPromotionTo() {
+        return promotionTo;
+    }
+
+    public void setPromotionTo(PieceType promoteTo) {
+        this.promotionTo = promoteTo;
     }
 
     protected boolean isKingsideCastle() {
