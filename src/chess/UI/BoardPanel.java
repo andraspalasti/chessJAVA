@@ -1,6 +1,9 @@
 package chess.UI;
 
+import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.SwingUtilities;
+
 import java.awt.*;
 import java.awt.event.*;
 import java.io.File;
@@ -11,6 +14,7 @@ import java.util.List;
 import chess.core.Board;
 import chess.core.Move;
 import chess.core.Piece;
+import chess.core.PieceType;
 import chess.core.Square;
 import chess.core.PGNParser.InvalidPGNException;
 
@@ -25,7 +29,9 @@ public class BoardPanel extends JPanel {
 
         Piece piece = square.getPiece();
         if (square.isTarget()) {
-            makeMove(new Move(selected, square.getPos()));
+            Move move = new Move(selected, square.getPos());
+            move.setPromotionTo(null);
+            makeMove(move);
         } else if (piece != null) {
             setSelectedSquare(square.getPos());
         } else {
@@ -59,6 +65,12 @@ public class BoardPanel extends JPanel {
     }
 
     public void makeMove(Move move) {
+        if (board.isPromotion(move) && move.getPromotionTo() == null) {
+            JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
+            PieceChooser pieceChooser = new PieceChooser(topFrame, board.getActiveColor());
+            PieceType type = pieceChooser.showChooser();
+            move.setPromotionTo(type);
+        }
         board.makeMove(move);
         legalMoves = board.generateMoves();
         this.firePropertyChange("board", null, null);
@@ -77,6 +89,7 @@ public class BoardPanel extends JPanel {
     public void loadPGN(String pgn) throws InvalidPGNException {
         board.loadPGN(pgn);
         updateBoard();
+        legalMoves = board.generateMoves();
         this.firePropertyChange("board", null, null);
     }
 

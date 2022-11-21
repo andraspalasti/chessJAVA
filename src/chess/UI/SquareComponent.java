@@ -1,38 +1,14 @@
 package chess.UI;
 
-import javax.imageio.ImageIO;
 import javax.swing.JButton;
 
 import chess.core.Piece;
-import chess.core.PieceColor;
-import chess.core.PieceType;
 import chess.core.Square;
 
 import java.awt.*;
 import java.awt.geom.*;
-import java.awt.image.BufferedImage;
 
 public class SquareComponent extends JButton {
-    // Read in images for chess pieces
-    private static final PieceType[] pieces = new PieceType[] { PieceType.King, PieceType.Queen, PieceType.Bishop,
-            PieceType.Knight, PieceType.Rook, PieceType.Pawn };
-    private static final Image[][] chessPieceImages = new Image[2][pieces.length];
-    static {
-        try {
-            ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
-            BufferedImage bi = ImageIO.read(classLoader.getResource("assets/pieces.png"));
-            int width = bi.getWidth() / pieces.length, height = bi.getHeight() / 2;
-            for (int row = 0; row < 2; row++) {
-                for (int col = 0; col < pieces.length; col++) {
-                    chessPieceImages[row][col] = bi.getSubimage(
-                            col * width, row * height, width, height);
-                }
-            }
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
     private Color backgroundColor;
     private Color highlightColor;
 
@@ -120,13 +96,6 @@ public class SquareComponent extends JButton {
         if (piece == null) {
             return null;
         }
-
-        int row = piece.getColor() == PieceColor.WHITE ? 0 : 1;
-        for (int i = 0; i < pieces.length; i++) {
-            if (pieces[i] == piece.getType()) {
-                return chessPieceImages[row][i];
-            }
-        }
-        return null;
+        return PieceImages.getImage(piece.getType(), piece.getColor());
     }
 }
