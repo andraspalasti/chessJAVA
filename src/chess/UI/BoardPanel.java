@@ -29,7 +29,8 @@ public class BoardPanel extends JPanel {
 
         Piece piece = square.getPiece();
         if (square.isTarget()) {
-            Move move = new Move(selected, square.getPos());
+            Move move = legalMoves.stream().filter((m) -> m.from.equals(selected) && m.to.equals(square.getPos()))
+                    .findFirst().orElse(null);
             move.setPromotionTo(null);
             makeMove(move);
         } else if (piece != null) {
@@ -65,7 +66,7 @@ public class BoardPanel extends JPanel {
     }
 
     public void makeMove(Move move) {
-        if (board.isPromotion(move) && move.getPromotionTo() == null) {
+        if (move.isPromotion() && move.getPromotionTo() == null) {
             JFrame topFrame = (JFrame) SwingUtilities.getWindowAncestor(this);
             PieceChooser pieceChooser = new PieceChooser(topFrame, board.getActiveColor());
             PieceType type = pieceChooser.showChooser();

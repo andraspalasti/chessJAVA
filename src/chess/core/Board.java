@@ -82,6 +82,7 @@ public class Board {
                 for (Move move : piece.generateMoves()) {
                     if (isLegal(move)) {
                         move.setMovedPiece(piece);
+                        move.setCapturedPiece(getPiece(move.to));
                         moves.add(move);
                     }
                 }
@@ -105,7 +106,7 @@ public class Board {
         if (!piece.canMakeMove(move)) {
             throw new IllegalArgumentException("Illegal move");
         }
-        if (isPromotion(move) && move.getPromotionTo() == null) {
+        if (move.isPromotion() && move.getPromotionTo() == null) {
             throw new IllegalArgumentException("No piece was given to promote to");
         }
         if (!isLegal(move)) {
@@ -144,17 +145,17 @@ public class Board {
         Piece piece = getPiece(src);
         Piece capturedPiece = getPiece(dest);
 
-        if (isPromotion(move)) {
-            squares[dest.getRow()][dest.getCol()] = createPiece(move.getPromotionTo(), activeColor);
-        } else {
-            squares[dest.getRow()][dest.getCol()] = piece;
-        }
-        squares[src.getRow()][src.getCol()] = null;
-
         // Set move metadate for undoing
         move.setMovedPiece(piece);
         move.setCapturedPiece(capturedPiece);
         move.setPrevCastlingRights(castlingRights);
+
+        squares[src.getRow()][src.getCol()] = null;
+        if (move.isPromotion()) {
+            squares[dest.getRow()][dest.getCol()] = createPiece(move.getPromotionTo(), activeColor);
+        } else {
+            squares[dest.getRow()][dest.getCol()] = piece;
+        }
 
         // handle castling
         if (piece.getType() == PieceType.King) {
@@ -304,14 +305,5 @@ public class Board {
             default:
                 return null;
         }
-    }
-
-    public boolean isPromotion(Move move) {
-        Piece movedPiece = getPiece(move.from);
-        if (movedPiece == null) {
-            return false;
-        }
-        int promotionRow = movedPiece.getColor() == PieceColor.WHITE ? 0 : Board.HEIGHT - 1;
-        return movedPiece.getType() == PieceType.Pawn && move.to.rank == promotionRow;
     }
 }

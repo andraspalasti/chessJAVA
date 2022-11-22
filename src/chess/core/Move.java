@@ -6,9 +6,31 @@ public class Move {
     private PieceType promotionTo = PieceType.Queen;
     private byte prevCastlingRights;
 
-    public Move(Square from, Square to) {
+    protected Move(Square from, Square to) {
         this.from = from;
         this.to = to;
+    }
+
+    public boolean isKingsideCastle() {
+        if (movedPiece == null) {
+            return false;
+        }
+        return movedPiece.getType() == PieceType.King && from.file == 4 && to.file == 6;
+    }
+
+    public boolean isQueensideCastle() {
+        if (movedPiece == null) {
+            return false;
+        }
+        return movedPiece.getType() == PieceType.King && from.file == 4 && to.file == 2;
+    }
+
+    public boolean isPromotion() {
+        if (movedPiece == null) {
+            return false;
+        }
+        int promotionRow = movedPiece.getColor() == PieceColor.WHITE ? 0 : Board.HEIGHT - 1;
+        return movedPiece.getType() == PieceType.Pawn && to.rank == promotionRow;
     }
 
     public Piece getMovedPiece() {
@@ -41,14 +63,6 @@ public class Move {
 
     public void setPromotionTo(PieceType promoteTo) {
         this.promotionTo = promoteTo;
-    }
-
-    protected boolean isKingsideCastle() {
-        return from.file == 4 && to.file == 6;
-    }
-
-    protected boolean isQueensideCastle() {
-        return from.file == 4 && to.file == 2;
     }
 
     @Override

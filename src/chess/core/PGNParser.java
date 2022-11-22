@@ -7,7 +7,7 @@ import java.util.regex.Pattern;
 
 public class PGNParser {
     private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\s(.*?)(?:\s(.*?)(?:$|\s)|$)");
-    private static final Pattern movePattern = Pattern.compile("([KQRBN]?)([a-h]?)x?([a-h][1-8])");
+    private static final Pattern movePattern = Pattern.compile("([KQRBN]?)([a-h]?)x?([a-h][1-8])((?:=[QRBN])?)");
 
     // Castling
     private static final String kingsideCastle = "O-O";
@@ -71,8 +71,10 @@ public class PGNParser {
                 : PieceType.fromCharacter(moveMatcher.group(1).charAt(0));
         int col = moveMatcher.group(2).equals("") ? -1 : moveMatcher.group(2).charAt(0) - 'a';
         Square target = new Square(moveMatcher.group(3));
+        PieceType promoteTo = moveMatcher.group(4).equals("") ? null
+                : PieceType.fromCharacter(moveMatcher.group(4).charAt(1));
 
-        return legalMoves.stream().filter((m) -> {
+        Move move = legalMoves.stream().filter((m) -> {
             if (m.getMovedPiece().getType() != type) {
                 return false;
             }
@@ -81,6 +83,8 @@ public class PGNParser {
             }
             return m.to.equals(target);
         }).findFirst().orElseThrow(() -> new InvalidPGNException("Illegal move"));
+        move.setPromotionTo(promoteTo);
+        return move;
     }
 
     public static void writePGN(PrintWriter pw, Board board) {
@@ -88,7 +92,8 @@ public class PGNParser {
         for (int i = 0; i < moves.length; i++) {
             Move move = moves[i];
             if (i % 2 == 0) {
-                pw.write(String.format("%d. ", i / 2 + 1));
+                pw.write(Integer.toString(i / 2 + 1));
+                pw.write(". ");
             }
             PieceType type = move.getMovedPiece().getType();
             if (type == PieceType.King && move.isKingsideCastle()) {
@@ -102,6 +107,10 @@ public class PGNParser {
                     pw.append('x');
                 }
                 pw.write(move.to.toString());
+                if (move.isPromotion()) {
+                    pw.append('=');
+                    pw.write(move.getPromotionTo().toString());
+                }
             }
             if (i % 2 == 0) {
                 pw.append(' ');
