@@ -101,7 +101,7 @@ public class BoardPanel extends JPanel {
         return board.getMoveCount();
     }
 
-    public void saveToFile(File file) throws IOException {
+    public void saveMoves(File file) throws IOException {
         PrintWriter pw = new PrintWriter(file);
         board.writeMoves(pw);
         pw.flush();

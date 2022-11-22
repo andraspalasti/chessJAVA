@@ -12,11 +12,13 @@ import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 
-import chess.UI.GamePanel;
+import chess.UI.BoardPanel;
+import chess.UI.MoveHistoryPanel;
 import chess.core.PGNParser.InvalidPGNException;
 
 public class Application extends JFrame {
-    private GamePanel gamePanel;
+    // private GamePanel gamePanel;
+    private BoardPanel boardPanel;
 
     private ActionListener importGame = (event) -> {
         // Choose file to import
@@ -26,7 +28,7 @@ public class Application extends JFrame {
             Path fp = Path.of(chooser.getSelectedFile().getAbsolutePath());
             try {
                 String pgn = Files.readString(fp);
-                gamePanel.loadGame(pgn);
+                boardPanel.loadPGN(pgn);
             } catch (IOException e) {
                 e.printStackTrace();
             } catch (InvalidPGNException e) {
@@ -40,7 +42,7 @@ public class Application extends JFrame {
         int rVal = chooser.showSaveDialog(this);
         if (rVal == JFileChooser.APPROVE_OPTION) {
             try {
-                gamePanel.saveGame(chooser.getSelectedFile());
+                boardPanel.saveMoves(chooser.getSelectedFile());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -48,8 +50,9 @@ public class Application extends JFrame {
     };
 
     public Application() {
-        gamePanel = new GamePanel();
-        this.add(gamePanel, BorderLayout.CENTER);
+        boardPanel = new BoardPanel();
+        this.add(boardPanel, BorderLayout.CENTER);
+        this.add(new MoveHistoryPanel(boardPanel), BorderLayout.LINE_END);
 
         JMenuItem imp = new JMenuItem("Import");
         imp.addActionListener(importGame);
