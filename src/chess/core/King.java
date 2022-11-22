@@ -37,9 +37,6 @@ public class King extends Piece {
             }
         }
 
-        // TODO: don't allow castling if an opponent piece is attacking one of the
-        // castling squares
-
         // Handle castling
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
         if (canCastleKingside()) {

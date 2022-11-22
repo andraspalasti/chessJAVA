@@ -7,9 +7,8 @@ import java.util.List;
 import chess.core.PGNParser.InvalidPGNException;
 
 public class Board {
-    public static final int WIDTH = 8, HEIGHT = 8;
-
     private static final String STARTING_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    public static final int WIDTH = 8, HEIGHT = 8;
 
     private static final byte whiteKingsideMask = (byte) 0b0001,
             whiteQueensideMask = (byte) 0b0010,
@@ -27,7 +26,55 @@ public class Board {
 
     protected List<Move> moveHistory;
 
-    private void initalize() {
+    public Board() {
+        reset();
+    }
+
+    private boolean isLegal(Move move) {
+        PieceColor curColor = activeColor;
+        makeMove(move);
+
+        // Find position of the king
+        Square kingPos = null;
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() == curColor && piece.getType() == PieceType.King) {
+                kingPos = new Square(i / Board.WIDTH, i % Board.WIDTH);
+            }
+        }
+
+        // Check that anything is attacking it
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() == activeColor && piece.isAttacking(kingPos)) {
+                undoMove();
+                return false;
+            }
+        }
+        undoMove();
+        return true;
+    }
+
+    private Piece createPiece(PieceType type, PieceColor color) {
+        switch (type) {
+            case King:
+                return new King(this, color);
+            case Queen:
+                return new Queen(this, color);
+            case Rook:
+                return new Rook(this, color);
+            case Bishop:
+                return new Bishop(this, color);
+            case Knight:
+                return new Knight(this, color);
+            case Pawn:
+                return new Pawn(this, color);
+            default:
+                return null;
+        }
+    }
+
+    public void reset() {
         this.squares = new Piece[HEIGHT][WIDTH];
         this.activeColor = PieceColor.WHITE;
         this.castlingRights = 0b1111;
@@ -49,10 +96,6 @@ public class Board {
                 col++;
             }
         }
-    }
-
-    public Board() {
-        initalize();
     }
 
     public Piece getPiece(Square square) {
@@ -92,55 +135,6 @@ public class Board {
     }
 
     public void makeMove(Move move) {
-        if (!isLegalSquare(move.from)) {
-            throw new IllegalArgumentException("The source square of the move is outside of the board");
-        }
-        if (!isLegalSquare(move.to)) {
-            throw new IllegalArgumentException("The target square of the move is outside of the board");
-        }
-
-        Piece piece = getPiece(move.from);
-        if (piece == null) {
-            throw new IllegalArgumentException("There is no piece on the source square of the move");
-        }
-        if (!piece.canMakeMove(move)) {
-            throw new IllegalArgumentException("Illegal move");
-        }
-        if (move.isPromotion() && move.getPromotionTo() == null) {
-            throw new IllegalArgumentException("No piece was given to promote to");
-        }
-        if (!isLegal(move)) {
-            throw new IllegalArgumentException("Illegal move, this move is only pseudo legal");
-        }
-        mustMakeMove(move);
-    }
-
-    private boolean isLegal(Move move) {
-        PieceColor curColor = activeColor;
-        mustMakeMove(move);
-
-        // Find position of the king
-        Square kingPos = null;
-        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
-            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
-            if (piece != null && piece.getColor() == curColor && piece.getType() == PieceType.King) {
-                kingPos = new Square(i / Board.WIDTH, i % Board.WIDTH);
-            }
-        }
-
-        // Check that anything is attacking it
-        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
-            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
-            if (piece != null && piece.getColor() == activeColor && piece.isAttacking(kingPos)) {
-                undoMove();
-                return false;
-            }
-        }
-        undoMove();
-        return true;
-    }
-
-    private void mustMakeMove(Move move) {
         Square src = move.from, dest = move.to;
         Piece piece = getPiece(src);
         Piece capturedPiece = getPiece(dest);
@@ -198,7 +192,6 @@ public class Board {
                 castlingRights &= ~whiteKingsideMask;
         }
 
-        // TODO: handle en pasant
         activeColor = activeColor.getInverse();
         moveHistory.add(move);
     }
@@ -229,18 +222,6 @@ public class Board {
 
         castlingRights = lastMove.getPrevCastlingRights();
         activeColor = activeColor.getInverse();
-        // TODO: handle en pasant
-    }
-
-    protected Square findPiece(Piece p) {
-        for (int rank = 0; rank < squares.length; rank++) {
-            for (int file = 0; file < squares[rank].length; file++) {
-                if (squares[rank][file] == p) {
-                    return new Square(rank, file);
-                }
-            }
-        }
-        return null;
     }
 
     public Move getLastMove() {
@@ -263,7 +244,7 @@ public class Board {
     }
 
     public void loadPGN(String pgn) throws InvalidPGNException {
-        initalize();
+        reset();
         PGNParser.loadPGN(this, pgn);
     }
 
@@ -288,22 +269,14 @@ public class Board {
         return isLegalSquare(pos.rank, pos.file);
     }
 
-    protected Piece createPiece(PieceType type, PieceColor color) {
-        switch (type) {
-            case King:
-                return new King(this, color);
-            case Queen:
-                return new Queen(this, color);
-            case Rook:
-                return new Rook(this, color);
-            case Bishop:
-                return new Bishop(this, color);
-            case Knight:
-                return new Knight(this, color);
-            case Pawn:
-                return new Pawn(this, color);
-            default:
-                return null;
+    protected Square findPiece(Piece p) {
+        for (int rank = 0; rank < squares.length; rank++) {
+            for (int file = 0; file < squares[rank].length; file++) {
+                if (squares[rank][file] == p) {
+                    return new Square(rank, file);
+                }
+            }
         }
+        return null;
     }
 }

@@ -46,7 +46,6 @@ public class Pawn extends Piece {
         if (containsOpponentPiece(rightCapture)) {
             moves.add(new Move(origin, rightCapture));
         }
-        // TODO: Implement en passant move and check
         return moves;
     }
 
