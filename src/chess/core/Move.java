@@ -6,7 +6,7 @@ public class Move {
     private PieceType promotionTo = PieceType.Queen;
     private byte prevCastlingRights;
 
-    protected Move(Square from, Square to) {
+    public Move(Square from, Square to) {
         this.from = from;
         this.to = to;
     }
@@ -16,7 +16,7 @@ public class Move {
      * 
      * @return True if the move is a kingside castle else false
      */
-    public boolean isKingsideCastle() {
+    protected boolean isKingsideCastle() {
         if (movedPiece == null) {
             return false;
         }
@@ -28,7 +28,7 @@ public class Move {
      * 
      * @return True if the move is a queenside castle else false
      */
-    public boolean isQueensideCastle() {
+    protected boolean isQueensideCastle() {
         if (movedPiece == null) {
             return false;
         }
@@ -40,7 +40,7 @@ public class Move {
      * 
      * @return True if you can promote the pawn after the move else false
      */
-    public boolean isPromotion() {
+    protected boolean isPromotion() {
         if (movedPiece == null) {
             return false;
         }
@@ -53,7 +53,7 @@ public class Move {
      * 
      * @return The piece which is moved
      */
-    public Piece getMovedPiece() {
+    protected Piece getMovedPiece() {
         return movedPiece;
     }
 
@@ -71,7 +71,7 @@ public class Move {
      * 
      * @return The captured piece
      */
-    public Piece getCapturedPiece() {
+    protected Piece getCapturedPiece() {
         return capturedPiece;
     }
 
