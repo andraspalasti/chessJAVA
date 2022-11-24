@@ -12,6 +12,7 @@ import javax.swing.JScrollPane;
 import javax.swing.event.ListSelectionListener;
 
 import chess.core.Move;
+import chess.core.Board.IllegalMove;
 
 public class MoveHistoryPanel extends JPanel {
     private BoardPanel boardPanel;
@@ -40,12 +41,17 @@ public class MoveHistoryPanel extends JPanel {
         }
     };
 
-    private ListSelectionListener onSelectionChange = (e) -> {
+    private ListSelectionListener onSelectionChange = (event) -> {
         int selected = jlist.getSelectedIndex() + 1;
         int moveCount = boardPanel.getMoveCount();
         if (moveCount < selected) {
-            for (int i = 0; i < selected - moveCount; i++)
-                boardPanel.makeMove(moveHistory.get(moveCount + i));
+            for (int i = 0; i < selected - moveCount; i++) {
+                try {
+                    boardPanel.makeMove(moveHistory.get(moveCount + i));
+                } catch (IllegalMove e) {
+                    e.printStackTrace();
+                }
+            }
         } else {
             for (int i = 0; i < moveCount - selected; i++)
                 boardPanel.undo();

@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import chess.core.Board.IllegalMove;
+
 public class PGNParser {
     // Regex patterns
     private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\s(.*?)(?:\s(.*?)(?:$|\s)|$)");
@@ -20,7 +22,7 @@ public class PGNParser {
      * Loads playes the moves specified in the PGN string on the board.
      * 
      * @param board The board to play the moves on
-     * @param pgn The string that contains the moves in the PGN format
+     * @param pgn   The string that contains the moves in the PGN format
      * @throws InvalidPGNException If the string contains errors
      */
     public static void loadPGN(Board board, String pgn) throws InvalidPGNException {
@@ -55,6 +57,9 @@ public class PGNParser {
                 board.makeMove(move2);
             } catch (InvalidPGNException e) {
                 throw new InvalidPGNException(String.format("%s with move number: %d", e.getMessage(), moveCount));
+            } catch (IllegalMove e) {
+                // This exception can't occur because we are using the generated legal moves for
+                // matching
             }
 
             moveCount++;
@@ -62,12 +67,14 @@ public class PGNParser {
     }
 
     /**
-     * Returns the move from the legal moves that matches the described move by the string.
+     * Returns the move from the legal moves that matches the described move by the
+     * string.
      * 
      * @param legalMoves The legal moves in that position
-     * @param moveStr The string that describes the move
+     * @param moveStr    The string that describes the move
      * @return The move that matched the description
-     * @throws InvalidPGNException If the described move is not in the legal moves or it is not the correct format
+     * @throws InvalidPGNException If the described move is not in the legal moves
+     *                             or it is not the correct format
      */
     private static Move parseMove(List<Move> legalMoves, String moveStr) throws InvalidPGNException {
         if (moveStr == null || moveStr.equals("")) {
@@ -112,7 +119,7 @@ public class PGNParser {
     /**
      * Writes the moves out to the specified output in the PGN format.
      * 
-     * @param pw The output to write to
+     * @param pw    The output to write to
      * @param board The board which moves to write
      */
     public static void writePGN(PrintWriter pw, Board board) {

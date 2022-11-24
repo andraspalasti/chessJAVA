@@ -114,11 +114,38 @@ public class Board {
     }
 
     /**
-     * Plays the specified move on the board.
+     * Checks if this is a legal move, than plays the move on the board.
+     * 
+     * @param move The move to play
+     * @throws IllegalMove If the move is not legal it gets thrown
+     */
+    public void makeMove(Move move) throws IllegalMove {
+        if (isLegalSquare(move.from))
+            throw new IllegalMove("The source square of the move is outside the board");
+        if (isLegalSquare(move.to))
+            throw new IllegalMove("The destination square of the move is outside the board");
+
+        Piece movedPiece = getPiece(move.from);
+        if (movedPiece == null)
+            throw new IllegalMove("There is no piece to move on the source square of the move");
+        if (!movedPiece.canMakeMove(move))
+            throw new IllegalMove("Illegal move for piece");
+
+        move.setMovedPiece(movedPiece);
+        if (move.isPromotion() && move.getPromotionTo() == null)
+            throw new IllegalMove("The move is a promoting one but no promotion piece type was set");
+        if (!isLegal(move))
+            throw new IllegalMove("The move provided is just pseudo legal");
+        mustMakeMove(move);
+    }
+
+    /**
+     * Plays the specified move on the board. The move must be playable or it will
+     * cause undefined behaviour.
      * 
      * @param move The move to play
      */
-    public void makeMove(Move move) {
+    private void mustMakeMove(Move move) {
         Square src = move.from, dest = move.to;
         Piece piece = getPiece(src);
         Piece capturedPiece = getPiece(dest);
@@ -335,7 +362,7 @@ public class Board {
      */
     private boolean isLegal(Move move) {
         PieceColor curColor = activeColor;
-        makeMove(move);
+        mustMakeMove(move);
 
         // Find position of the king
         Square kingPos = null;
@@ -381,6 +408,12 @@ public class Board {
                 return new Pawn(this, color);
             default:
                 return null;
+        }
+    }
+
+    public class IllegalMove extends Exception {
+        public IllegalMove(String reason) {
+            super(reason);
         }
     }
 }

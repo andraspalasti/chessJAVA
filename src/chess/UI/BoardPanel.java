@@ -17,6 +17,7 @@ import chess.core.Piece;
 import chess.core.PieceColor;
 import chess.core.PieceType;
 import chess.core.Square;
+import chess.core.Board.IllegalMove;
 import chess.core.PGNParser.InvalidPGNException;
 
 public class BoardPanel extends JPanel {
@@ -31,7 +32,11 @@ public class BoardPanel extends JPanel {
         Piece piece = square.getPiece();
         if (square.isTarget()) {
             Move move = new Move(selected, square.getPos());
-            makeMove(move);
+            try {
+                makeMove(move);
+            } catch (IllegalMove e) {
+                e.printStackTrace();
+            }
         } else if (piece != null) {
             setSelectedSquare(square.getPos());
         } else {
@@ -64,7 +69,7 @@ public class BoardPanel extends JPanel {
                 (size.width - min) / 2);
     }
 
-    public void makeMove(Move move) {
+    public void makeMove(Move move) throws IllegalMove {
         // Check if the move is a promoting one
         int promotionRow = board.getActiveColor() == PieceColor.WHITE ? 0 : Board.HEIGHT - 1;
         Piece movedPiece = board.getPiece(move.from);
