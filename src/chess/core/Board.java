@@ -15,70 +15,23 @@ public class Board {
             blackKingsideMask = (byte) 0b0100,
             blackQueensideMask = (byte) 0b1000;
 
-    /**
-     * A byte representing the castling rights of the board.
-     */
     private byte castlingRights;
-
     protected Piece[][] squares;
     protected PieceColor activeColor;
-    protected Square enPassantSquare;
-
     protected List<Move> moveHistory;
 
     public Board() {
         reset();
     }
 
-    private boolean isLegal(Move move) {
-        PieceColor curColor = activeColor;
-        makeMove(move);
-
-        // Find position of the king
-        Square kingPos = null;
-        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
-            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
-            if (piece != null && piece.getColor() == curColor && piece.getType() == PieceType.King) {
-                kingPos = new Square(i / Board.WIDTH, i % Board.WIDTH);
-            }
-        }
-
-        // Check that anything is attacking it
-        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
-            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
-            if (piece != null && piece.getColor() == activeColor && piece.isAttacking(kingPos)) {
-                undoMove();
-                return false;
-            }
-        }
-        undoMove();
-        return true;
-    }
-
-    private Piece createPiece(PieceType type, PieceColor color) {
-        switch (type) {
-            case King:
-                return new King(this, color);
-            case Queen:
-                return new Queen(this, color);
-            case Rook:
-                return new Rook(this, color);
-            case Bishop:
-                return new Bishop(this, color);
-            case Knight:
-                return new Knight(this, color);
-            case Pawn:
-                return new Pawn(this, color);
-            default:
-                return null;
-        }
-    }
-
+    /**
+     * Resets the board as if a whole new game has started.
+     */
     public void reset() {
         this.squares = new Piece[HEIGHT][WIDTH];
         this.activeColor = PieceColor.WHITE;
         this.castlingRights = 0b1111;
-        this.enPassantSquare = null;
+        // this.enPassantSquare = null;
 
         this.moveHistory = new ArrayList<>();
 
@@ -98,10 +51,26 @@ public class Board {
         }
     }
 
+    /**
+     * Returns the piece that is on the specified square of the board.
+     * 
+     * @param square The square to return the piece from
+     * @return The piece that is on the square, if there is no piece on the square
+     *         null will be returned
+     */
     public Piece getPiece(Square square) {
         return getPiece(square.rank, square.file);
     }
 
+    /**
+     * Returns the piece from the specified row and column. The square a8 is on the
+     * 0th row and 0th column.
+     * 
+     * @param row The row of the square
+     * @param col The column of the square
+     * @return The piece on the square, returns null if there is no piece on the
+     *         square
+     */
     public Piece getPiece(int row, int col) {
         if (row < 0 || HEIGHT <= row)
             throw new IllegalArgumentException("Row out of bounds");
@@ -112,10 +81,20 @@ public class Board {
         return squares[row][col];
     }
 
+    /**
+     * Returns the number of moves that have been played.
+     * 
+     * @return Number of moves that have been played
+     */
     public int getMoveCount() {
         return moveHistory.size();
     }
 
+    /**
+     * Returns all the legal moves at the current state of the board.
+     * 
+     * @return List of all of the legal moves
+     */
     public List<Move> generateMoves() {
         List<Move> moves = new ArrayList<>();
         for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
@@ -134,6 +113,11 @@ public class Board {
         return moves;
     }
 
+    /**
+     * Plays the specified move on the board.
+     * 
+     * @param move The move to play
+     */
     public void makeMove(Move move) {
         Square src = move.from, dest = move.to;
         Piece piece = getPiece(src);
@@ -196,6 +180,9 @@ public class Board {
         moveHistory.add(move);
     }
 
+    /**
+     * Undos the last move that has been played on the board.
+     */
     public void undoMove() {
         if (moveHistory.size() == 0) {
             return;
@@ -224,6 +211,11 @@ public class Board {
         activeColor = activeColor.getInverse();
     }
 
+    /**
+     * Returns the latest move that has been made.
+     * 
+     * @return Last move that has been made or null if no moves have been played
+     */
     public Move getLastMove() {
         if (0 < moveHistory.size()) {
             return moveHistory.get(moveHistory.size() - 1);
@@ -231,6 +223,11 @@ public class Board {
         return null;
     }
 
+    /**
+     * Returns all the moves that have been played.
+     * 
+     * @return All of the move that have been played.
+     */
     public Move[] getMoves() {
         Move[] moves = new Move[moveHistory.size()];
         for (int i = 0; i < moves.length; i++) {
@@ -239,36 +236,84 @@ public class Board {
         return moves;
     }
 
+    /**
+     * Returns the currently active color.
+     * 
+     * @return The active color
+     */
     public PieceColor getActiveColor() {
         return activeColor;
     }
 
+    /**
+     * Resets the board than loads the moves described by the PGN format.
+     * 
+     * @param pgn The string that contains the PGN formatted moves.
+     * @throws InvalidPGNException
+     */
     public void loadPGN(String pgn) throws InvalidPGNException {
         reset();
         PGNParser.loadPGN(this, pgn);
     }
 
+    /**
+     * Writes the moves that have been played on the board to the specified output
+     * described by the PGN format.
+     * 
+     * @param pw The output to write to
+     */
     public void writeMoves(PrintWriter pw) {
         PGNParser.writePGN(pw, this);
     }
 
+    /**
+     * Decides whether the player with the specified color can castle kingside.
+     * 
+     * @param color The color of the player
+     * @return The kingside castling availability of the specified player
+     */
     public boolean canCastleKingside(PieceColor color) {
         return (castlingRights & (color == PieceColor.WHITE ? whiteKingsideMask : blackKingsideMask)) != 0;
     }
 
+    /**
+     * Decides whether the player with the specified color can castle queenside.
+     * 
+     * @param color The color of the player
+     * @return The queenside castling availability of the specified player
+     */
     public boolean canCastleQueenside(PieceColor color) {
         return (castlingRights & (color == PieceColor.WHITE ? whiteQueensideMask : blackQueensideMask)) != 0;
     }
 
+    /**
+     * Checks if the specified square is in the board.
+     * 
+     * @param row The row of the specified square
+     * @param col The column of the specified square
+     * @return True if the square is in the board
+     */
     public boolean isLegalSquare(int row, int col) {
         return (0 <= col && col < Board.HEIGHT)
                 && (0 <= row && row < Board.WIDTH);
     }
 
+    /**
+     * Checks if the specified square is in the board.
+     * 
+     * @param pos The square to test.
+     * @return True if the square is in the board
+     */
     public boolean isLegalSquare(Square pos) {
         return isLegalSquare(pos.rank, pos.file);
     }
 
+    /**
+     * Finds the square that the specified piece is standing on.
+     * 
+     * @param p The piece to find
+     * @return The square that the piece is located on
+     */
     protected Square findPiece(Piece p) {
         for (int rank = 0; rank < squares.length; rank++) {
             for (int file = 0; file < squares[rank].length; file++) {
@@ -278,5 +323,64 @@ public class Board {
             }
         }
         return null;
+    }
+
+    /**
+     * A method to decide if a move is not just pseudo legal but actually legal.
+     * (This means that the move can be played and the player's king will not be in
+     * check)
+     * 
+     * @param move The move to test
+     * @return True if the move is legal else it's false
+     */
+    private boolean isLegal(Move move) {
+        PieceColor curColor = activeColor;
+        makeMove(move);
+
+        // Find position of the king
+        Square kingPos = null;
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() == curColor && piece.getType() == PieceType.King) {
+                kingPos = new Square(i / Board.WIDTH, i % Board.WIDTH);
+            }
+        }
+
+        // Check that anything is attacking it
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() == activeColor && piece.isAttacking(kingPos)) {
+                undoMove();
+                return false;
+            }
+        }
+        undoMove();
+        return true;
+    }
+
+    /**
+     * Returns an instance of the specified piece bound to this board.
+     * 
+     * @param type  The type of the piece
+     * @param color The color of the piece
+     * @return Instance of the specified piece
+     */
+    private Piece createPiece(PieceType type, PieceColor color) {
+        switch (type) {
+            case King:
+                return new King(this, color);
+            case Queen:
+                return new Queen(this, color);
+            case Rook:
+                return new Rook(this, color);
+            case Bishop:
+                return new Bishop(this, color);
+            case Knight:
+                return new Knight(this, color);
+            case Pawn:
+                return new Pawn(this, color);
+            default:
+                return null;
+        }
     }
 }

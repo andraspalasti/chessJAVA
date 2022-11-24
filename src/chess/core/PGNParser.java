@@ -6,6 +6,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class PGNParser {
+    // Regex patterns
     private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\s(.*?)(?:\s(.*?)(?:$|\s)|$)");
     private static final Pattern movePattern = Pattern.compile("([KQRBN]?)([a-h]?)x?([a-h][1-8])((?:=[QRBN])?)");
 
@@ -15,6 +16,13 @@ public class PGNParser {
 
     private static final String draw = "1/2-1/2";
 
+    /**
+     * Loads playes the moves specified in the PGN string on the board.
+     * 
+     * @param board The board to play the moves on
+     * @param pgn The string that contains the moves in the PGN format
+     * @throws InvalidPGNException If the string contains errors
+     */
     public static void loadPGN(Board board, String pgn) throws InvalidPGNException {
         pgn = pgn.replaceAll("(\n\r|\n|\t)", " ");
         int moveCount = 1;
@@ -47,6 +55,14 @@ public class PGNParser {
         }
     }
 
+    /**
+     * Returns the move from the legal moves that matches the described move by the string.
+     * 
+     * @param legalMoves The legal moves in that position
+     * @param moveStr The string that describes the move
+     * @return The move that matched the description
+     * @throws InvalidPGNException If the described move is not in the legal moves or it is not the correct format
+     */
     private static Move parseMove(List<Move> legalMoves, String moveStr) throws InvalidPGNException {
         if (moveStr == null || moveStr.equals("")) {
             return null;
@@ -87,6 +103,12 @@ public class PGNParser {
         return move;
     }
 
+    /**
+     * Writes the moves out to the specified output in the PGN format.
+     * 
+     * @param pw The output to write to
+     * @param board The board which moves to write
+     */
     public static void writePGN(PrintWriter pw, Board board) {
         Move[] moves = board.getMoves();
         for (int i = 0; i < moves.length; i++) {

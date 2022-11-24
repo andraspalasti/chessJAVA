@@ -14,10 +14,21 @@ public enum PieceType {
         this.value = value;
     }
 
+    /**
+     * Returns the value of the piece.
+     * 
+     * @return The value of this specific piece type.
+     */
     public int getValue() {
         return this.value;
     }
 
+    /**
+     * Returns a piece type from a character according to FEN notation.
+     * 
+     * @param c The character which the piece type is encoded in
+     * @return The piece type
+     */
     public static PieceType fromCharacter(char c) {
         switch (Character.toUpperCase(c)) {
             case 'K':
