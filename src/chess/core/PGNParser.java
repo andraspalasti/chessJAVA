@@ -36,14 +36,20 @@ public class PGNParser {
             }
 
             try {
-                String whiteMove = fullMoveMatcher.group(2).trim();
-                Move move1 = parseMove(board.generateMoves(), whiteMove);
+                String whiteMove = fullMoveMatcher.group(2);
+                if (whiteMove == null)
+                    break;
+
+                Move move1 = parseMove(board.generateMoves(), whiteMove.trim());
                 if (move1 == null)
                     break;
                 board.makeMove(move1);
 
-                String blackMove = fullMoveMatcher.group(3).trim();
-                Move move2 = parseMove(board.generateMoves(), blackMove);
+                String blackMove = fullMoveMatcher.group(3);
+                if (blackMove == null)
+                    break;
+
+                Move move2 = parseMove(board.generateMoves(), blackMove.trim());
                 if (move2 == null)
                     break;
                 board.makeMove(move2);
