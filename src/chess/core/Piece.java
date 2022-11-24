@@ -71,4 +71,14 @@ public abstract class Piece {
         }
         return false;
     }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (obj == null) {
+            return false;
+        }
+
+        Piece other = (Piece) obj;
+        return this.getType() == other.getType() && this.color == other.color;
+    }
 }

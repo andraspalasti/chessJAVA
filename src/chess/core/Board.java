@@ -120,9 +120,9 @@ public class Board {
      * @throws IllegalMove If the move is not legal it gets thrown
      */
     public void makeMove(Move move) throws IllegalMove {
-        if (isLegalSquare(move.from))
+        if (!isLegalSquare(move.from))
             throw new IllegalMove("The source square of the move is outside the board");
-        if (isLegalSquare(move.to))
+        if (!isLegalSquare(move.to))
             throw new IllegalMove("The destination square of the move is outside the board");
 
         Piece movedPiece = getPiece(move.from);
@@ -333,6 +333,19 @@ public class Board {
      */
     public boolean isLegalSquare(Square pos) {
         return isLegalSquare(pos.rank, pos.file);
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        Board other = (Board) obj;
+        for (int i = 0; i < WIDTH * HEIGHT; i++) {
+            Piece p1 = squares[i / WIDTH][i % WIDTH];
+            Piece p2 = other.squares[i / WIDTH][i % WIDTH];
+            if (p1 != p2 && !p1.equals(p2)) {
+                return false;
+            }
+        }
+        return castlingRights == other.castlingRights && activeColor == other.activeColor;
     }
 
     /**
