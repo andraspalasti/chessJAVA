@@ -50,20 +50,57 @@ public class King extends Piece {
     }
 
     private boolean canCastleKingside() {
-        boolean hasRight = board.canCastleKingside(color);
+        // Check the castling rights
+        if (!board.canCastleKingside(color)) {
+            return false;
+        }
+
+        // Check if there are piecies in the way
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
-        return hasRight
-                && board.squares[rank][5] == null
-                && board.squares[rank][6] == null;
+        if (board.squares[rank][5] != null || board.squares[rank][6] != null) {
+            return false;
+        }
+
+        // Check that no square is attacked where the king moves
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = board.squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() != color) {
+                // Enemy piece
+                boolean isAttacking = piece.isAttacking(new Square(rank, 4)) || piece.isAttacking(new Square(rank, 5))
+                        || piece.isAttacking(new Square(rank, 6));
+                if (isAttacking) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     private boolean canCastleQueenside() {
-        boolean hasRight = board.canCastleQueenside(color);
+        // Check the castling rights
+        if (!board.canCastleQueenside(color)) {
+            return false;
+        }
+
+        // Check if there are piecies in the way
         int rank = color == PieceColor.WHITE ? Board.HEIGHT - 1 : 0;
-        return hasRight
-                && board.squares[rank][1] == null
-                && board.squares[rank][2] == null
-                && board.squares[rank][3] == null;
+        if (board.squares[rank][1] != null || board.squares[rank][2] != null || board.squares[rank][3] != null) {
+            return false;
+        }
+
+        // Check that no square is attacked where the king moves
+        for (int i = 0; i < Board.WIDTH * Board.HEIGHT; i++) {
+            Piece piece = board.squares[i / Board.WIDTH][i % Board.WIDTH];
+            if (piece != null && piece.getColor() != color) {
+                // Enemy piece
+                boolean isAttacking = piece.isAttacking(new Square(rank, 2)) || piece.isAttacking(new Square(rank, 3))
+                        || piece.isAttacking(new Square(rank, 4));
+                if (isAttacking) {
+                    return false;
+                }
+            }
+        }
+        return true;
     }
 
     @Override
