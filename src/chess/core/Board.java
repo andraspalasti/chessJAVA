@@ -7,7 +7,7 @@ import java.util.List;
 import chess.core.PGNParser.InvalidPGNException;
 
 public class Board {
-    private static final String STARTING_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR";
+    private static final String STARTING_POS = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq";
     public static final int WIDTH = 8, HEIGHT = 8;
 
     private static final byte whiteKingsideMask = (byte) 0b0001,
@@ -21,34 +21,14 @@ public class Board {
     protected List<Move> moveHistory;
 
     public Board() {
-        reset();
+        mustLoadFEN(STARTING_POS);
     }
 
     /**
      * Resets the board as if a whole new game has started.
      */
     public void reset() {
-        this.squares = new Piece[HEIGHT][WIDTH];
-        this.activeColor = PieceColor.WHITE;
-        this.castlingRights = 0b1111;
-        // this.enPassantSquare = null;
-
-        this.moveHistory = new ArrayList<>();
-
-        int row = 0, col = 0;
-        for (char c : STARTING_POS.toCharArray()) {
-            if (c == '/') {
-                row++;
-                col = 0;
-            } else if (Character.isDigit(c)) {
-                col += (int) (c - '1');
-            } else {
-                PieceType type = PieceType.fromCharacter(c);
-                PieceColor color = Character.isUpperCase(c) ? PieceColor.WHITE : PieceColor.BLACK;
-                squares[row][col] = createPiece(type, color);
-                col++;
-            }
-        }
+        mustLoadFEN(STARTING_POS);
     }
 
     /**
@@ -363,6 +343,58 @@ public class Board {
             }
         }
         return null;
+    }
+
+    /**
+     * This loads a position from a FEN string, exceptions are not handled so you
+     * have to know beforehand that your fen string is perfectly correct.
+     * 
+     * @param fen The string to load the position from described by the FEN notation
+     */
+    protected void mustLoadFEN(String fen) {
+        // Initalize default values
+        this.squares = new Piece[HEIGHT][WIDTH];
+        this.activeColor = PieceColor.WHITE;
+        this.castlingRights = 0b0000;
+        this.moveHistory = new ArrayList<>();
+
+        String[] parts = fen.split("\s");
+
+        // Parse position
+        String pos = parts[0];
+        int row = 0, col = 0;
+        for (char c : pos.toCharArray()) {
+            if (Character.isDigit(c)) {
+                col += (int) (c - '0');
+            } else if (c == '/') {
+                col = 0;
+                row++;
+            } else {
+                PieceType type = PieceType.fromCharacter(c);
+                PieceColor color = Character.isUpperCase(c) ? PieceColor.WHITE : PieceColor.BLACK;
+                squares[row][col] = createPiece(type, color);
+                col++;
+            }
+        }
+
+        // Parse active color
+        if (parts[1].contains("w")) {
+            activeColor = PieceColor.WHITE;
+        } else {
+            activeColor = PieceColor.BLACK;
+        }
+
+        // Parse castling rights
+        castlingRights = 0;
+        String rights = parts[2];
+        if (rights.contains("K"))
+            castlingRights |= whiteKingsideMask;
+        if (rights.contains("Q"))
+            castlingRights |= whiteQueensideMask;
+        if (rights.contains("k"))
+            castlingRights |= blackKingsideMask;
+        if (rights.contains("q"))
+            castlingRights |= blackQueensideMask;
     }
 
     /**
