@@ -358,7 +358,7 @@ public class Board {
         this.castlingRights = 0b0000;
         this.moveHistory = new ArrayList<>();
 
-        String[] parts = fen.split("\s");
+        String[] parts = fen.split("\\s");
 
         // Parse position
         String pos = parts[0];

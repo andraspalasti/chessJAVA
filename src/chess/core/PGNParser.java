@@ -9,7 +9,7 @@ import chess.core.Board.IllegalMove;
 
 public class PGNParser {
     // Regex patterns
-    private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\s(.*?)(?:\s(.*?)(?:$|\s)|$)");
+    private static final Pattern fullMovePattern = Pattern.compile("([0-9]+)\\.\\s(.*?)(?:\\s(.*?)(?:$|\\s)|$)");
     private static final Pattern movePattern = Pattern.compile("([KQRBN]?)([a-h]?)x?([a-h][1-8])((?:=[QRBN])?)");
 
     // Castling
