@@ -29,10 +29,20 @@ public class SquareComponent extends JButton {
         }
     }
 
+    /**
+     * Returns the piece which is standing on the square.
+     * 
+     * @return The piece standing on the square
+     */
     public Piece getPiece() {
         return this.piece;
     }
 
+    /**
+     * Sets the piece that is standing on this square.
+     * 
+     * @param piece The piece which is standing on this square
+     */
     public void setPiece(Piece piece) {
         this.piece = piece;
     }
@@ -80,18 +90,38 @@ public class SquareComponent extends JButton {
         }
     }
 
+    /**
+     * Returns if the square is marked as a target square or not.
+     * 
+     * @return True if the square is marked as a target else false
+     */
     public boolean isTarget() {
         return this.isTarget;
     }
 
+    /**
+     * Marks or clears the target flag for the square.
+     * 
+     * @param isTarget If true than marks the square as target else clears mark
+     */
     public void setTarget(boolean isTarget) {
         this.isTarget = isTarget;
     }
 
+    /**
+     * Returns the position of the square.
+     * 
+     * @return The position of the square
+     */
     public Square getPos() {
         return this.pos;
     }
 
+    /**
+     * Returns the image that corresponds to the piece standing on the square.
+     * 
+     * @return The image of the piece or null if no piece is standing on the square
+     */
     private Image getPieceImage() {
         if (piece == null) {
             return null;

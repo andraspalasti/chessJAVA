@@ -69,6 +69,14 @@ public class BoardPanel extends JPanel {
                 (size.width - min) / 2);
     }
 
+    /**
+     * Plays the specified move on the board and updates the panel to reflect the
+     * position after the move. Also if the move is a promoting one and there than
+     * it opens a PieceChooser to let the user choose the piece to promote to.
+     * 
+     * @param move The move to play
+     * @throws IllegalMove If the move is not legal
+     */
     public void makeMove(Move move) throws IllegalMove {
         // Check if the move is a promoting one
         int promotionRow = board.getActiveColor() == PieceColor.WHITE ? 0 : Board.HEIGHT - 1;
@@ -86,6 +94,9 @@ public class BoardPanel extends JPanel {
         updateBoard();
     }
 
+    /**
+     * Undos the last move.
+     */
     public void undo() {
         if (0 < board.getMoveCount()) {
             board.undoMove();
@@ -95,6 +106,12 @@ public class BoardPanel extends JPanel {
         }
     }
 
+    /**
+     * Loads the specified PGN.
+     * 
+     * @param pgn The PGN to load.
+     * @throws InvalidPGNException If there is a problem with processing the PGN.
+     */
     public void loadPGN(String pgn) throws InvalidPGNException {
         board.loadPGN(pgn);
         updateBoard();
@@ -102,14 +119,31 @@ public class BoardPanel extends JPanel {
         this.firePropertyChange("board", null, null);
     }
 
+    /**
+     * Returns all the moves that have been played.
+     * 
+     * @return All of the move that have been played.
+     */
     public Move[] getMoves() {
         return board.getMoves();
     }
 
+    /**
+     * Returns the number of moves that have been played.
+     * 
+     * @return Number of moves that have been played
+     */
     public int getMoveCount() {
         return board.getMoveCount();
     }
 
+    /**
+     * Saves the moves played on the board to the specified file with the PGN
+     * format.
+     * 
+     * @param file The file to save to
+     * @throws IOException If there is a problem with writing to the file
+     */
     public void saveMoves(File file) throws IOException {
         PrintWriter pw = new PrintWriter(file);
         board.writeMoves(pw);
@@ -117,6 +151,9 @@ public class BoardPanel extends JPanel {
         pw.close();
     }
 
+    /**
+     * Updates the UI according to the current board posititon.
+     */
     private void updateBoard() {
         setSelectedSquare(null);
         for (int row = 0; row < squares.length; row++) {
@@ -134,6 +171,11 @@ public class BoardPanel extends JPanel {
         this.repaint();
     }
 
+    /**
+     * Changes the selected square to the specified one.
+     * 
+     * @param square The new selected square if null no square will be selected
+     */
     private void setSelectedSquare(Square square) {
         // clear all targets
         for (int row = 0; row < squares.length; row++) {

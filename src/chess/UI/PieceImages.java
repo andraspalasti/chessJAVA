@@ -39,6 +39,13 @@ public class PieceImages {
         }
     }
 
+    /**
+     * Returns the corresponding image for the specified piece.
+     * 
+     * @param type  The type of the piece
+     * @param color The color of the piece
+     * @return The image that corresponds to the described piece.
+     */
     public static Image getImage(PieceType type, PieceColor color) {
         int row = color == PieceColor.WHITE ? 0 : 1;
         int col = pieceTypeToCol.get(type);
